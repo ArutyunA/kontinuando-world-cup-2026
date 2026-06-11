@@ -65,12 +65,18 @@
   .btn:disabled{opacity:.5; cursor:not-allowed; transform:none}
   .muted{color:var(--ink-dim); font-size:13px}
   /* ---------- draw setup ---------- */
-  .names-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:18px 0}
-  .names-grid input{
+  .names-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin:18px 0}
+  .name-row{display:flex; gap:6px; align-items:center}
+  .name-row input{
     background:var(--card2); border:1px solid var(--line); color:var(--ink);
-    padding:12px 14px; border-radius:12px; font-size:15px; font-weight:600; width:100%;
+    padding:12px 14px; border-radius:12px; font-size:15px; font-weight:600; width:100%; min-width:0;
   }
-  .names-grid input:focus{outline:2px solid var(--cyan)}
+  .name-row input:focus{outline:2px solid var(--cyan)}
+  .name-row .rm{flex:none; width:34px; height:34px; border-radius:10px; border:1px solid var(--line);
+    background:var(--card2); color:var(--ink-dim); font-weight:800; cursor:pointer}
+  .name-row .rm:hover{color:var(--pink); border-color:var(--pink)}
+  .name-row .rm:disabled{opacity:.3; cursor:not-allowed}
+  .player-info{color:var(--cyan); font-weight:700; font-size:14px; margin-bottom:14px}
   /* ---------- draw result grid ---------- */
   .squad-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:18px}
   .squad{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px}
@@ -173,7 +179,7 @@
 <div class="wrap">
   <header>
     <div class="title">⚽ <span class="grad">KONTINUANDO WORLD CUP 2026</span> ⚽</div>
-    <div class="subtitle">The Official Household Sweepstake — 48 teams · 8 legends · 1 bragging-rights trophy</div>
+    <div class="subtitle">The Official Household Sweepstake — 48 teams · 1 bragging-rights trophy</div>
     <div class="kickoff" id="kickoffBadge">⏳ …</div>
   </header>
 
@@ -189,17 +195,21 @@
   <section id="tab-draw" class="show">
     <div id="draw-setup">
       <h2>The Draw Ceremony</h2>
-      <p class="lead">Enter the 8 contestants, dim the lights, gather everyone round the screen, and hit the big button.
-      Teams are revealed one by one, pool by pool — finishing with the Giants. No takesies-backsies.</p>
+      <p class="lead">Enter the contestants, dim the lights, gather everyone round the screen, and hit the big button.
+      Pools adjust to the player count — everyone gets one team per pool, and any leftover teams
+      (always the lowest-ranked) sit out. Teams are revealed one by one, finishing with the top seeds. No takesies-backsies.</p>
       <div class="card">
         <div class="names-grid" id="nameInputs"></div>
+        <div class="player-info" id="playerInfo"></div>
+        <button class="btn secondary small" id="addPlayerBtn" style="margin-bottom:16px">➕ Add player</button>
+        <br>
         <button class="btn" id="startDrawBtn">🎬 Begin the Draw Ceremony</button>
         <button class="btn secondary" id="importBtn2">📥 Import a draw</button>
       </div>
     </div>
     <div id="draw-done" style="display:none">
       <h2>The Squads</h2>
-      <p class="lead">The draw is locked in. Six teams each — one from every pool. May the odds be ever in your favour (except yours, obviously).</p>
+      <p class="lead">The draw is locked in. Equal squads all round — one team from every pool. May the odds be ever in your favour (except yours, obviously).</p>
       <div style="display:flex; gap:10px; flex-wrap:wrap">
         <button class="btn small secondary" id="exportBtn">📤 Share / export draw</button>
         <button class="btn small secondary" id="importBtn">📥 Import draw</button>
@@ -223,8 +233,8 @@
 
   <!-- ============ POOLS ============ -->
   <section id="tab-pools">
-    <h2>The Six Pools</h2>
-    <p class="lead">Teams ranked into pools by real bookmaker odds to win the tournament (BetMGM, June 2026). The longer the odds, the bigger the points multiplier.</p>
+    <h2>The Pools</h2>
+    <p class="lead">All 48 teams ranked by real bookmaker odds to win the tournament (BetMGM, June 2026), then dealt into pools sized to the player count. The longer the odds, the bigger the points multiplier — and any leftover teams are always the lowest-ranked ones.</p>
     <div id="poolList"></div>
   </section>
 
@@ -275,8 +285,16 @@
       </div>
       <div class="rule-card">
         <h3>✖️ The Multiplier</h3>
-        <p class="muted" style="margin-bottom:6px">All of the above gets multiplied by your team's pool:</p>
+        <p class="muted" style="margin-bottom:6px">All of the above gets multiplied by your team's seed band (fixed by odds ranking, whatever the player count):</p>
         <table class="mult-table" id="multTable"></table>
+      </div>
+      <div class="rule-card">
+        <h3>👨‍👩‍👧‍👦 Any number of players</h3>
+        <ul>
+          <li>With <b>N</b> players, each pool holds N consecutive seeds and everyone draws one team per pool — equal squads, always.</li>
+          <li>Teams that don't divide evenly <b>sit out</b>, starting from the lowest-ranked. They score points for nobody.</li>
+          <li>Changing the players after the draw means a redraw — reset the draw first.</li>
+        </ul>
       </div>
       <div class="rule-card">
         <h3>🧮 Worked examples</h3>
@@ -368,20 +386,26 @@ const DATA_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/m
 const KICKOFF = new Date('2026-06-11T19:00:00Z'); // Mexico v South Africa, Estadio Azteca
 const FINAL_DATE = new Date('2026-07-19T23:59:00Z');
 
-const POOLS = [
-  {key:'A', name:'The Giants',      emoji:'🏆', mult:1,   color:'var(--p1)', desc:'The bookies’ chosen ones. Anything less than a semi-final is a scandal.',
-   teams:[['Spain','9/2'],['France','5/1'],['England','7/1'],['Brazil','8/1'],['Portugal','9/1'],['Argentina','9/1'],['Germany','14/1'],['Netherlands','20/1']]},
-  {key:'B', name:'The Contenders',  emoji:'⚡', mult:1.5, color:'var(--p2)', desc:'Dangerous, talented, and one good week away from glory.',
-   teams:[['Belgium','33/1'],['Norway','33/1'],['Colombia','40/1'],['Morocco','40/1'],['Japan','50/1'],['USA','50/1'],['Mexico','66/1'],['Senegal','66/1']]},
-  {key:'C', name:'The Dark Horses', emoji:'🐎', mult:2,   color:'var(--p3)', desc:'Nobody’s first pick. Everybody’s "ooh, watch out for them".',
-   teams:[['Switzerland','66/1'],['Turkey','66/1'],['Uruguay','66/1'],['Croatia','80/1'],['Ecuador','80/1'],['Sweden','100/1'],['Austria','150/1'],['Canada','150/1']]},
-  {key:'D', name:'The Outsiders',   emoji:'🎲', mult:3,   color:'var(--p4)', desc:'Triple points territory. One famous win pays the rent.',
-   teams:[['Ivory Coast','200/1'],['Algeria','250/1'],['Bosnia & Herzegovina','250/1'],['Czech Republic','250/1'],['Egypt','250/1'],['South Korea','250/1'],['Paraguay','250/1'],['Scotland','250/1']]},
-  {key:'E', name:'The Long Shots',  emoji:'🌠', mult:4,   color:'var(--p5)', desc:'Quadruple points. Every goal is a family event.',
-   teams:[['Australia','500/1'],['Ghana','500/1'],['Iran','500/1'],['Tunisia','500/1'],['DR Congo','750/1'],['Cape Verde','1000/1'],['Iraq','1000/1'],['Jordan','1000/1']]},
-  {key:'F', name:'The Miracle Workers', emoji:'🦄', mult:5, color:'var(--p6)', desc:'Five-times points. If one of these lifts the trophy, we riot (joyfully).',
-   teams:[['New Zealand','1000/1'],['Panama','1000/1'],['Qatar','1000/1'],['Saudi Arabia','1000/1'],['South Africa','1000/1'],['Uzbekistan','1000/1'],['Curaçao','2500/1'],['Haiti','2500/1']]},
+// Six fixed "bands" of 8 seeds each — multipliers stay attached to teams by seed band,
+// regardless of how many players take part.
+const BANDS = [
+  {name:'The Giants', emoji:'🏆', mult:1, color:'var(--p1)', desc:'The bookies’ chosen ones. Anything less than a semi-final is a scandal.'},
+  {name:'The Contenders', emoji:'⚡', mult:1.5, color:'var(--p2)', desc:'Dangerous, talented, and one good week away from glory.'},
+  {name:'The Dark Horses', emoji:'🐎', mult:2, color:'var(--p3)', desc:'Nobody’s first pick. Everybody’s "ooh, watch out for them".'},
+  {name:'The Outsiders', emoji:'🎲', mult:3, color:'var(--p4)', desc:'Triple points territory. One famous win pays the rent.'},
+  {name:'The Long Shots', emoji:'🌠', mult:4, color:'var(--p5)', desc:'Quadruple points. Every goal is a family event.'},
+  {name:'The Miracle Workers', emoji:'🦄', mult:5, color:'var(--p6)', desc:'Five-times points. If one of these lifts the trophy, we riot (joyfully).'},
 ];
+// All 48 teams ranked by outright winner odds (BetMGM via Yahoo Sports, June 2026)
+const RANKED = [
+  ['Spain','9/2'],['France','5/1'],['England','7/1'],['Brazil','8/1'],['Portugal','9/1'],['Argentina','9/1'],['Germany','14/1'],['Netherlands','20/1'],
+  ['Belgium','33/1'],['Norway','33/1'],['Colombia','40/1'],['Morocco','40/1'],['Japan','50/1'],['USA','50/1'],['Mexico','66/1'],['Senegal','66/1'],
+  ['Switzerland','66/1'],['Turkey','66/1'],['Uruguay','66/1'],['Croatia','80/1'],['Ecuador','80/1'],['Sweden','100/1'],['Austria','150/1'],['Canada','150/1'],
+  ['Ivory Coast','200/1'],['Algeria','250/1'],['Bosnia & Herzegovina','250/1'],['Czech Republic','250/1'],['Egypt','250/1'],['South Korea','250/1'],['Paraguay','250/1'],['Scotland','250/1'],
+  ['Australia','500/1'],['Ghana','500/1'],['Iran','500/1'],['Tunisia','500/1'],['DR Congo','750/1'],['Cape Verde','1000/1'],['Iraq','1000/1'],['Jordan','1000/1'],
+  ['New Zealand','1000/1'],['Panama','1000/1'],['Qatar','1000/1'],['Saudi Arabia','1000/1'],['South Africa','1000/1'],['Uzbekistan','1000/1'],['Curaçao','2500/1'],['Haiti','2500/1'],
+];
+const MIN_PLAYERS = 2, MAX_PLAYERS = 24;
 const FLAGS = {
   'Algeria':'🇩🇿','Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹','Belgium':'🇧🇪','Bosnia & Herzegovina':'🇧🇦',
   'Brazil':'🇧🇷','Canada':'🇨🇦','Cape Verde':'🇨🇻','Colombia':'🇨🇴','Croatia':'🇭🇷','Curaçao':'🇨🇼',
@@ -394,9 +418,36 @@ const FLAGS = {
 };
 const SCORE = {win:3, draw:1, goal:1, cleanSheet:2, advance:5, champion:10, third:3};
 const KO_ROUNDS = ['Round of 32','Round of 16','Quarter-final','Semi-final','Final'];
-const TEAM_POOL = {}; // team -> pool object
-POOLS.forEach(p => p.teams.forEach(([t]) => TEAM_POOL[t] = p));
-const ALL_TEAMS = new Set(Object.keys(TEAM_POOL));
+const TEAM_BAND = {}, TEAM_ODDS = {}; // team -> seed band (multiplier) / odds string
+RANKED.forEach(([t, odds], i) => { TEAM_BAND[t] = BANDS[Math.min(Math.floor(i/8), 5)]; TEAM_ODDS[t] = odds; });
+const ALL_TEAMS = new Set(RANKED.map(r => r[0]));
+
+// With n players: floor(48/n) pools of n consecutive seeds; the lowest-ranked
+// remainder sits out. Everyone draws one team per pool — equal squads for all.
+function dynamicPools(n){
+  const numPools = Math.floor(RANKED.length / n);
+  const pools = [];
+  for (let i = 0; i < numPools; i++) pools.push(RANKED.slice(i*n, (i+1)*n).map(r => r[0]));
+  return {pools, leftovers: RANKED.slice(numPools*n).map(r => r[0])};
+}
+function poolMeta(pools, n){ // give each dynamic pool a band-flavoured identity
+  const used = {};
+  const roman = ['','','II','III','IV','V','VI','VII','VIII','IX','X'];
+  return pools.map((teams, i) => {
+    const band = TEAM_BAND[teams[Math.floor((teams.length-1)/2)]]; // band of the middle seed
+    used[band.name] = (used[band.name] || 0) + 1;
+    const name = band.name + (used[band.name] > 1 ? ' ' + roman[used[band.name]] : '');
+    const mults = teams.map(t => TEAM_BAND[t].mult);
+    const lo = Math.min(...mults), hi = Math.max(...mults);
+    return {name, emoji: band.emoji, color: band.color, teams,
+      sub: `Seeds ${i*n+1}–${i*n+teams.length} · multiplier ${lo === hi ? '×'+lo : '×'+lo+'–×'+hi}`};
+  });
+}
+function currentPools(){
+  const n = Math.min(Math.max(state.players.length, MIN_PLAYERS), MAX_PLAYERS);
+  const {pools, leftovers} = dynamicPools(n);
+  return {meta: poolMeta(pools, n), leftovers, n};
+}
 
 /* ===================== STATE ===================== */
 const LS_KEY = 'wc26-sweepstake-v1';
@@ -502,7 +553,7 @@ function computeScores(){
     if (w){ teams[w].bonusPts += SCORE.champion; teams[w].champion = true; teams[w].out = false; teams[w].stage = 'CHAMPION'; }
   }
   for (const t of ALL_TEAMS){
-    const st = teams[t], mult = TEAM_POOL[t].mult;
+    const st = teams[t], mult = TEAM_BAND[t].mult;
     st.total = (st.matchPts + st.goalPts + st.csPts + st.bonusPts) * mult;
   }
   // player totals
@@ -514,7 +565,7 @@ function computeScores(){
       players[pi].goals += st.gf;
       players[pi].teams.push(st);
     }
-    players.forEach(p => p.teams.sort((a,b) => TEAM_POOL[a.team].mult - TEAM_POOL[b.team].mult));
+    players.forEach(p => p.teams.sort((a,b) => RANKED.findIndex(r => r[0] === a.team) - RANKED.findIndex(r => r[0] === b.team)));
   }
   players.sort((a,b) => b.total - a.total || b.goals - a.goals);
   return {teams, players, matches};
@@ -550,14 +601,26 @@ function renderKickoff(){
 }
 function renderNameInputs(){
   const div = $('nameInputs'); div.innerHTML = '';
-  for (let i=0;i<8;i++){
+  state.players.forEach((name, i) => {
+    const row = document.createElement('div'); row.className = 'name-row';
     const inp = document.createElement('input');
     inp.placeholder = 'Player ' + (i+1);
-    inp.value = state.players[i] || '';
+    inp.value = name || '';
     inp.maxLength = 20;
     inp.addEventListener('input', () => { state.players[i] = inp.value; save(); });
-    div.appendChild(inp);
-  }
+    const rm = document.createElement('button');
+    rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Remove player';
+    rm.disabled = state.players.length <= MIN_PLAYERS;
+    rm.addEventListener('click', () => { state.players.splice(i, 1); save(); renderNameInputs(); });
+    row.appendChild(inp); row.appendChild(rm);
+    div.appendChild(row);
+  });
+  const n = state.players.length;
+  const {meta, leftovers} = currentPools();
+  $('addPlayerBtn').disabled = n >= MAX_PLAYERS;
+  $('playerInfo').textContent =
+    `${n} players → ${meta.length} pools of ${n} → ${meta.length} teams each` +
+    (leftovers.length ? ` · ${leftovers.length} lowest-ranked team${leftovers.length > 1 ? 's' : ''} sit out` : ' · every team is in play');
 }
 function renderDrawTab(){
   const done = state.draw && state.draw.completedAt;
@@ -568,33 +631,43 @@ function renderDrawTab(){
   const grid = $('squadGrid'); grid.innerHTML = '';
   state.players.forEach((name, pi) => {
     const mine = Object.entries(state.draw.assignments).filter(([,v]) => v === pi).map(([t]) => t)
-      .sort((a,b) => TEAM_POOL[a].mult - TEAM_POOL[b].mult);
+      .sort((a,b) => RANKED.findIndex(r => r[0] === a) - RANKED.findIndex(r => r[0] === b));
     const sq = document.createElement('div'); sq.className = 'squad';
     sq.innerHTML = `<h3>👤 ${esc(name)}</h3>` + mine.map(t => {
-      const p = TEAM_POOL[t], st = teams[t];
+      const b = TEAM_BAND[t], st = teams[t];
       const status = st.champion ? '👑' : st.out ? '💀' : '';
-      return `<div class="chip"><span>${FLAGS[t]}</span><span>${esc(t)} ${status}</span><span class="mult" style="color:${p.color}">×${p.mult}</span></div>`;
+      return `<div class="chip"><span>${FLAGS[t]}</span><span>${esc(t)} ${status}</span><span class="mult" style="color:${b.color}">×${b.mult}</span></div>`;
     }).join('');
     grid.appendChild(sq);
   });
 }
 function renderPools(){
   const div = $('poolList'); div.innerHTML = '';
-  POOLS.forEach(pool => {
+  const {meta, leftovers} = currentPools();
+  const teamRow = (t, dim) => {
+    let owner = '';
+    if (!dim && state.draw && state.draw.completedAt){
+      const pi = state.draw.assignments[t];
+      if (pi !== undefined) owner = `<span class="owner">${esc(state.players[pi])}</span>`;
+    }
+    const b = TEAM_BAND[t];
+    return `<div class="pteam"${dim ? ' style="opacity:.45"' : ''}><span>${FLAGS[t]}</span><span>${esc(t)}</span>
+      <span class="odds">${TEAM_ODDS[t]} · <span style="color:${b.color}">×${b.mult}</span></span>${owner}</div>`;
+  };
+  meta.forEach(pool => {
     const el = document.createElement('div'); el.className = 'pool';
-    const teamHtml = pool.teams.map(([t, odds]) => {
-      let owner = '';
-      if (state.draw && state.draw.completedAt){
-        const pi = state.draw.assignments[t];
-        if (pi !== undefined) owner = `<span class="owner">${esc(state.players[pi])}</span>`;
-      }
-      return `<div class="pteam"><span>${FLAGS[t]}</span><span>${esc(t)}</span><span class="odds">${odds}</span>${owner}</div>`;
-    }).join('');
-    el.innerHTML = `<h3><span>${pool.emoji}</span><span style="color:${pool.color}">${pool.name}</span>
-      <span class="pm" style="color:${pool.color}">×${pool.mult}</span></h3>
-      <div class="pdesc">${pool.desc}</div><div class="pool-teams">${teamHtml}</div>`;
+    el.innerHTML = `<h3><span>${pool.emoji}</span><span style="color:${pool.color}">${esc(pool.name)}</span></h3>
+      <div class="pdesc">${esc(pool.sub)}</div>
+      <div class="pool-teams">${pool.teams.map(t => teamRow(t, false)).join('')}</div>`;
     div.appendChild(el);
   });
+  if (leftovers.length){
+    const el = document.createElement('div'); el.className = 'pool';
+    el.innerHTML = `<h3><span>🛋️</span><span style="color:var(--ink-dim)">Sitting This One Out</span></h3>
+      <div class="pdesc">With ${state.players.length} players the numbers don't stretch — the lowest-ranked teams watch from the sofa and score points for nobody.</div>
+      <div class="pool-teams">${leftovers.map(t => teamRow(t, true)).join('')}</div>`;
+    div.appendChild(el);
+  }
 }
 function renderLeaderboard(){
   const div = $('lbList'); div.innerHTML = '';
@@ -611,7 +684,7 @@ function renderLeaderboard(){
     row.innerHTML = `
       <div class="lb-rank">${medals[rank] || (rank+1)}</div>
       <div><div class="lb-name">${esc(p.name)} ${rank===0 && p.total>0 ? '👑':''}</div>
-        <div class="lb-teams">${p.teams.map(t => FLAGS[t.team] + (t.out && !t.champion ? '✖':'')).join(' ')} · ${alive}/6 teams alive</div></div>
+        <div class="lb-teams">${p.teams.map(t => FLAGS[t.team] + (t.out && !t.champion ? '✖':'')).join(' ')} · ${alive}/${p.teams.length} teams alive</div></div>
       <div class="lb-pts"><div class="n">${fmtPts(p.total)}</div><div class="l">points</div></div>`;
     const detail = document.createElement('div');
     detail.className = 'lb-detail card';
@@ -620,7 +693,7 @@ function renderLeaderboard(){
       <th class="num">Match</th><th class="num">Goals</th><th class="num">CS</th><th class="num">Bonus</th><th class="num">×</th><th class="num">Total</th><th>Status</th>
       </tr></thead><tbody>` +
       p.teams.map(t => {
-        const pool = TEAM_POOL[t.team];
+        const pool = TEAM_BAND[t.team];
         const status = t.champion ? '<span class="status-champ">CHAMPION 👑</span>'
           : t.out ? '<span class="status-out">Out (' + t.stage + ')</span>'
           : '<span class="status-alive">' + (t.stage === 'Group' ? 'Alive' : t.stage) + ' ⚽</span>';
@@ -668,8 +741,8 @@ function renderMatches(){
   div.innerHTML = html;
 }
 function renderMultTable(){
-  $('multTable').innerHTML = POOLS.map(p =>
-    `<tr><td>${p.emoji} ${p.name}</td><td style="color:${p.color}">×${p.mult}</td></tr>`).join('');
+  $('multTable').innerHTML = BANDS.map((b, i) =>
+    `<tr><td>${b.emoji} ${b.name} <span class="muted">(seeds ${i*8+1}–${i*8+8})</span></td><td style="color:${b.color}">×${b.mult}</td></tr>`).join('');
 }
 function renderUpdated(){
   const txt = state.fetchedAt ? 'Updated ' + new Date(state.fetchedAt).toLocaleString() : '';
@@ -703,17 +776,20 @@ const revealChime = () => { beep(523,.18,.09); setTimeout(()=>beep(784,.3,.09),1
 const fanfare = () => [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.4,.1),i*150));
 
 function buildAssignments(){
+  const n = state.players.length;
+  const {pools} = dynamicPools(n);
   const assignments = {};
-  POOLS.forEach(pool => {
-    const order = shuffle([0,1,2,3,4,5,6,7]);
-    pool.teams.forEach(([team], i) => { assignments[team] = order[i]; });
+  pools.forEach(teams => {
+    const order = shuffle([...Array(n).keys()]);
+    teams.forEach((team, i) => { assignments[team] = order[i]; });
   });
   return assignments;
 }
 async function runCeremony(replayOnly){
   const names = state.players.map(n => (n||'').trim());
   if (!replayOnly){
-    if (names.some(n => !n)){ toast('⚠️ Fill in all 8 names first!'); return; }
+    if (names.length < MIN_PLAYERS){ toast('⚠️ Need at least ' + MIN_PLAYERS + ' players!'); return; }
+    if (names.some(n => !n)){ toast('⚠️ Fill in every player name first!'); return; }
     state.players = names;
     state.draw = {assignments: buildAssignments(), completedAt: null};
     save();
@@ -734,20 +810,21 @@ async function runCeremony(replayOnly){
   const card = $('cerCard'), ann = $('cerAnnounce');
   const D = base => cerFast ? Math.min(base, 90) : base;
 
+  const {meta} = currentPools();
   $('cerPool').textContent = '🎰 THE DRAW CEREMONY 🎰';
-  $('cerPoolSub').textContent = 'Six pools. Eight contenders. Zero refunds.';
+  $('cerPoolSub').textContent = `${meta.length} pools. ${state.players.length} contenders. Zero refunds.`;
   card.textContent = '❓'; ann.textContent = '';
   await sleep(D(1800)); if (cerCancelled) return;
 
-  for (let pi = POOLS.length - 1; pi >= 0; pi--){
-    const pool = POOLS[pi];
-    $('cerPool').innerHTML = `${pool.emoji} <span style="color:${pool.color}">${pool.name}</span>`;
-    $('cerPoolSub').textContent = `Points multiplier ×${pool.mult}` + (pi === 0 ? ' — the big one. Hold your breath.' : '');
+  for (let pi = meta.length - 1; pi >= 0; pi--){
+    const pool = meta[pi];
+    $('cerPool').innerHTML = `${pool.emoji} <span style="color:${pool.color}">${esc(pool.name)}</span>`;
+    $('cerPoolSub').textContent = pool.sub + (pi === 0 ? ' — the big one. Hold your breath.' : '');
     revealChime();
     await sleep(D(1600)); if (cerCancelled) return;
     // reveal weakest first, biggest name last
     for (let ti = pool.teams.length - 1; ti >= 0; ti--){
-      const team = pool.teams[ti][0];
+      const team = pool.teams[ti];
       const owner = assignments[team];
       card.className = 'big-card thinking'; card.textContent = '❓'; ann.innerHTML = 'Drawing…';
       const ticks = cerFast ? 1 : 8;
@@ -812,7 +889,9 @@ function doExport(){
 function doImport(){
   try{
     const data = JSON.parse($('importText').value.trim());
-    if (!data.players || data.players.length !== 8 || !data.draw || !data.draw.assignments) throw new Error('bad format');
+    if (!data.players || data.players.length < MIN_PLAYERS || data.players.length > MAX_PLAYERS
+        || !data.draw || !data.draw.assignments
+        || Object.values(data.draw.assignments).some(v => !Number.isInteger(v) || v < 0 || v >= data.players.length)) throw new Error('bad format');
     state.players = data.players; state.draw = data.draw;
     if (!state.draw.completedAt) state.draw.completedAt = Date.now();
     save(); closeModal('importModal'); renderAll(); toast('✅ Draw imported!');
@@ -836,6 +915,9 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
   b.classList.add('active');
   $('tab-' + b.dataset.tab).classList.add('show');
 }));
+$('addPlayerBtn').addEventListener('click', () => {
+  if (state.players.length < MAX_PLAYERS){ state.players.push(''); save(); renderNameInputs(); }
+});
 $('startDrawBtn').addEventListener('click', () => runCeremony(false));
 $('replayBtn').addEventListener('click', () => runCeremony(true));
 $('skipBtn').addEventListener('click', () => { cerFast = true; });

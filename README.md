@@ -3,11 +3,14 @@
 A single-file website (`index.html`) for the family sweepstake — no backend, no build step.
 
 ## How it works
-- **48 teams, 8 players, 6 pools** ranked by real bookmaker odds (BetMGM via Yahoo Sports, June 2026).
-  Everyone draws one team per pool, so each person owns 6 teams.
+- **48 teams ranked by real bookmaker odds** (BetMGM via Yahoo Sports, June 2026), dealt into pools
+  sized to the player count (2–24 players): with N players each pool holds N consecutive seeds and
+  everyone draws one team per pool — equal squads for all. Teams that don't divide evenly sit out,
+  always the lowest-ranked ones. (8 players = the classic 6 pools of 8, no leftovers.)
 - **Scoring — "The Underdog Multiplier":** win 3 / draw 1 / goal 1 / clean sheet 2, +5 per knockout
   round reached, +10 for the champion, +3 for winning the third-place match — all multiplied by the
-  team's pool: Giants ×1 · Contenders ×1.5 · Dark Horses ×2 · Outsiders ×3 · Long Shots ×4 · Miracle Workers ×5.
+  team's seed band (fixed by odds rank, independent of player count): seeds 1–8 Giants ×1 ·
+  9–16 Contenders ×1.5 · 17–24 Dark Horses ×2 · 25–32 Outsiders ×3 · 33–40 Long Shots ×4 · 41–48 Miracle Workers ×5.
   Winning a penalty shootout counts as a win, but shootout goals don't score.
 - All kick-off times are shown in **London time**.
 
@@ -16,7 +19,7 @@ A single-file website (`index.html`) for the family sweepstake — no backend, n
 - Host it for the whole family: push this folder to GitHub and enable GitHub Pages — everyone gets a URL.
 
 ## Draw day
-1. Open the site, enter the 8 names on **The Draw** tab.
+1. Open the site, add/remove players and enter names on **The Draw** tab.
 2. Hit **Begin the Draw Ceremony** — teams reveal one by one with sound and confetti, ending with the Giants.
 3. After the draw, click **Share / export draw** and paste the code into the family chat.
    Everyone else uses **Import a draw** on their device so all phones show the same squads.
