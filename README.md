@@ -5,8 +5,11 @@ A single-file website (`index.html`) for the family sweepstake — no backend, n
 ## How it works
 - **48 teams ranked by real bookmaker odds** (BetMGM via Yahoo Sports, June 2026), dealt into pools
   sized to the player count (2–24 players): with N players each pool holds N consecutive seeds and
-  everyone draws one team per pool — equal squads for all. Teams that don't divide evenly sit out,
-  always the lowest-ranked ones. (8 players = the classic 6 pools of 8, no leftovers.)
+  everyone draws one team per pool — equal squads for all. (8 players = the classic 6 pools of 8.)
+  When 48 doesn't divide evenly, the bottom pool is topped up by **drawing a random lowest-ranked
+  team twice**, so a pair of players share that team (🔁) and both score its points — no team sits
+  out. (7 players → 7 pools of 7, one shared bottom team.) If too many duplicates would be needed,
+  the lowest-ranked teams sit out instead.
 - **Scoring — "The Underdog Multiplier":** win 3 / draw 1 / goal 1 / clean sheet 2, +5 per knockout
   round reached, +10 for the champion, +3 for winning the third-place match — all multiplied by the
   team's seed band (fixed by odds rank, independent of player count): seeds 1–8 Giants ×1 ·

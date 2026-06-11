@@ -90,6 +90,7 @@
   .pool .pm{margin-left:auto; font-family:'Bungee'; font-size:15px}
   .pool .pdesc{color:var(--ink-dim); font-size:13px; margin-bottom:12px}
   .pool-teams{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px}
+  .pteam .shared{font-size:10px; font-weight:800; color:var(--pink); background:rgba(255,93,143,.14); border-radius:999px; padding:1px 6px}
   .pteam{display:flex; align-items:center; gap:8px; background:var(--card2); padding:8px 12px; border-radius:10px; font-size:14px; font-weight:600}
   .pteam .odds{color:var(--ink-dim); font-size:12px; font-weight:700}
   .pteam .owner{margin-left:auto; font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(255,211,77,.15); color:var(--gold)}
@@ -322,7 +323,8 @@
         <h3>👨‍👩‍👧‍👦 Any number of players</h3>
         <ul>
           <li>With <b>N</b> players, each pool holds N consecutive seeds and everyone draws one team per pool — equal squads, always.</li>
-          <li>Teams that don't divide evenly <b>sit out</b>, starting from the lowest-ranked. They score points for nobody.</li>
+          <li>If 48 doesn't divide evenly, the bottom pool is topped up by <b>drawing a random lowest-ranked team twice</b>, so a pair of players <b>share</b> that team (🔁) — both score its points. No team sits out.</li>
+          <li>(If too many duplicates would be needed, the lowest-ranked teams sit out instead and score for nobody.)</li>
           <li>Changing the players after the draw means a redraw — reset the draw first.</li>
           <li>Resetting (or importing over) a locked draw needs the <b>organiser password</b> 🔒 — no "accidental" redraws when your Giants flop.</li>
         </ul>
@@ -453,42 +455,99 @@ const TEAM_BAND = {}, TEAM_ODDS = {}; // team -> seed band (multiplier) / odds s
 RANKED.forEach(([t, odds], i) => { TEAM_BAND[t] = BANDS[Math.min(Math.floor(i/8), 5)]; TEAM_ODDS[t] = odds; });
 const ALL_TEAMS = new Set(RANKED.map(r => r[0]));
 
-// With n players: floor(48/n) pools of n consecutive seeds; the lowest-ranked
-// remainder sits out. Everyone draws one team per pool — equal squads for all.
-function dynamicPools(n){
-  const numPools = Math.floor(RANKED.length / n);
-  const pools = [];
-  for (let i = 0; i < numPools; i++) pools.push(RANKED.slice(i*n, (i+1)*n).map(r => r[0]));
-  return {pools, leftovers: RANKED.slice(numPools*n).map(r => r[0])};
+const clampPlayers = n => Math.min(Math.max(n, MIN_PLAYERS), MAX_PLAYERS);
+// Plan the pools for n players (deterministic, no randomness yet).
+//  - 'perfect'  : 48 divides evenly → k pools of n, nobody sits out.
+//  - 'dup'      : doesn't divide, but the shortfall is small enough → ceil(48/n) pools;
+//                 all 48 teams used and the bottom pool is topped up with duplicates of
+//                 random lowest-ranked teams, so two players end up sharing each duplicate.
+//  - 'leftover' : the shortfall is too big to fill with single duplicates → floor(48/n)
+//                 pools and the lowest-ranked remainder sits out.
+function planPools(n){
+  n = clampPlayers(n);
+  const floorK = Math.floor(RANKED.length / n);
+  const rem = RANKED.length - floorK * n;            // teams that don't fit a floor(k) split
+  const chunk = k => Array.from({length:k}, (_, i) => RANKED.slice(i*n, (i+1)*n).map(r => r[0]));
+  if (rem === 0) return {pools: chunk(floorK), leftovers: [], dupCount: 0, mode: 'perfect', n};
+  if (n <= 2 * rem){                                 // duplicate-fill keeps every dup to exactly 2 owners
+    const pools = chunk(floorK);
+    pools.push(RANKED.slice(floorK*n).map(r => r[0])); // partial bottom pool of `rem` real teams
+    return {pools, leftovers: [], dupCount: n - rem, mode: 'dup', n};
+  }
+  return {pools: chunk(floorK), leftovers: RANKED.slice(floorK*n).map(r => r[0]), dupCount: 0, mode: 'leftover', n};
 }
-function poolMeta(pools, n){ // give each dynamic pool a band-flavoured identity
+// Turn a plan into concrete pools of exactly n entries each. In 'dup' mode this picks the
+// random bottom-pool teams to clone, then re-sorts the bottom pool by seed (twins sit together).
+function realizePools(n){
+  const plan = planPools(n);
+  const pools = plan.pools.map(p => p.slice());
+  if (plan.mode === 'dup'){
+    const last = pools[pools.length - 1];
+    const picks = shuffle(last.slice()).slice(0, plan.dupCount);   // distinct bottom teams
+    last.push(...picks);
+    last.sort((a, b) => seedOf(a) - seedOf(b));
+  }
+  return {pools, leftovers: plan.leftovers, dupCount: plan.dupCount, mode: plan.mode};
+}
+const seedOf = t => RANKED.findIndex(r => r[0] === t);
+function poolMeta(pools){ // band-flavoured identity for each (possibly duplicate-containing) pool
   const used = {};
-  const roman = ['','','II','III','IV','V','VI','VII','VIII','IX','X'];
-  return pools.map((teams, i) => {
-    const band = TEAM_BAND[teams[Math.floor((teams.length-1)/2)]]; // band of the middle seed
+  const roman = ['','','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+  return pools.map(entries => {
+    const uniq = [...new Set(entries)];
+    const seeds = uniq.map(seedOf);
+    const band = TEAM_BAND[uniq[Math.floor((uniq.length - 1) / 2)]]; // band of the middle seed
     used[band.name] = (used[band.name] || 0) + 1;
     const name = band.name + (used[band.name] > 1 ? ' ' + roman[used[band.name]] : '');
-    const mults = teams.map(t => TEAM_BAND[t].mult);
+    const mults = uniq.map(t => TEAM_BAND[t].mult);
     const lo = Math.min(...mults), hi = Math.max(...mults);
-    return {name, emoji: band.emoji, color: band.color, teams,
-      sub: `Seeds ${i*n+1}–${i*n+teams.length} · multiplier ${lo === hi ? '×'+lo : '×'+lo+'–×'+hi}`};
+    const dup = entries.length - uniq.length;
+    return {name, emoji: band.emoji, color: band.color, teams: entries, uniq,
+      sub: `Seeds ${Math.min(...seeds)+1}–${Math.max(...seeds)+1} · multiplier ${lo === hi ? '×'+lo : '×'+lo+'–×'+hi}`
+           + (dup ? ` · ${dup} drawn twice` : '')};
   });
 }
+function leftoversOf(pools){
+  const inPlay = new Set(pools.flat());
+  return RANKED.map(r => r[0]).filter(t => !inPlay.has(t));
+}
 function currentPools(){
-  const n = Math.min(Math.max(state.players.length, MIN_PLAYERS), MAX_PLAYERS);
-  const {pools, leftovers} = dynamicPools(n);
-  return {meta: poolMeta(pools, n), leftovers, n};
+  const n = clampPlayers(state.players.length);
+  if (state.draw && state.draw.pools){ // realized draw — show exactly what was drawn (incl. duplicate)
+    return {meta: poolMeta(state.draw.pools), leftovers: leftoversOf(state.draw.pools), n, dupCount: 0, mode: 'drawn'};
+  }
+  const plan = planPools(n);
+  return {meta: poolMeta(plan.pools), leftovers: plan.leftovers, n, dupCount: plan.dupCount, mode: plan.mode};
 }
 
 /* ===================== STATE ===================== */
 const LS_KEY = 'wc26-sweepstake-v1';
 let state = {players:['','','','','','','',''], draw:null, matches:null, fetchedAt:null, muted:false};
 try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.players) state = Object.assign(state, s); } catch(e){}
+// Upgrade draws saved before teams could have multiple owners: assignments {team:pi} → {team:[pi]}
+function normalizeDraw(){
+  const d = state.draw;
+  if (!d || !d.assignments) return;
+  const vals = Object.values(d.assignments);
+  if (vals.length && !Array.isArray(vals[0])){
+    const old = d.assignments, assignments = {};
+    for (const [t, pi] of Object.entries(old)) assignments[t] = [pi];
+    if (!d.pools){ // reconstruct a pool layout so the ceremony/pools view still work
+      d.pools = planPools(state.players.length).pools.map(p => p.filter(t => t in old));
+    }
+    d.assignments = assignments;
+  }
+}
+normalizeDraw();
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',2600); }
 function fmtPts(x){ return Number.isInteger(x) ? String(x) : x.toFixed(1); }
+function ownerBadges(team, cls){ // 0, 1 or 2 owner chips for a team
+  if (!state.draw || !state.draw.completedAt) return '';
+  return (state.draw.assignments[team] || []).map(pi => `<span class="${cls||'own'}">${esc(state.players[pi])}</span>`).join('');
+}
 
 /* ===================== SCORING ENGINE ===================== */
 function matchWhen(m){ // epoch ms from venue-local "13:00 UTC-6" + date
@@ -591,14 +650,16 @@ function computeScores(){
   const STAGE_RANK = {Group:0, R32:1, R16:2, QF:3, SF:4, Final:5, CHAMPION:6};
   const players = state.players.map((name, i) => ({name, i, total:0, goals:0, best:0, teams:[]}));
   if (state.draw){
-    for (const [team, pi] of Object.entries(state.draw.assignments)){
+    for (const [team, owners] of Object.entries(state.draw.assignments)){
       const st = teams[team];
-      players[pi].total += st.total;
-      players[pi].goals += st.gf;
-      players[pi].best = Math.max(players[pi].best, STAGE_RANK[st.stage] || 0);
-      players[pi].teams.push(st);
+      for (const pi of owners){ // a duplicated team has two owners — both score it
+        players[pi].total += st.total;
+        players[pi].goals += st.gf;
+        players[pi].best = Math.max(players[pi].best, STAGE_RANK[st.stage] || 0);
+        players[pi].teams.push(st);
+      }
     }
-    players.forEach(p => p.teams.sort((a,b) => RANKED.findIndex(r => r[0] === a.team) - RANKED.findIndex(r => r[0] === b.team)));
+    players.forEach(p => p.teams.sort((a,b) => seedOf(a.team) - seedOf(b.team)));
   }
   // tiebreaks: 1) whoever's team went furthest, 2) total goals scored by their teams
   players.sort((a,b) => b.total - a.total || b.best - a.best || b.goals - a.goals);
@@ -650,11 +711,16 @@ function renderNameInputs(){
     div.appendChild(row);
   });
   const n = state.players.length;
-  const {meta, leftovers} = currentPools();
+  const {meta, leftovers, dupCount, mode} = currentPools();
   $('addPlayerBtn').disabled = n >= MAX_PLAYERS;
-  $('playerInfo').textContent =
-    `${n} players → ${meta.length} pools of ${n} → ${meta.length} teams each` +
-    (leftovers.length ? ` · ${leftovers.length} lowest-ranked team${leftovers.length > 1 ? 's' : ''} sit out` : ' · every team is in play');
+  let tail;
+  if (mode === 'leftover')
+    tail = ` · ${leftovers.length} lowest-ranked team${leftovers.length > 1 ? 's' : ''} sit out`;
+  else if (dupCount > 0)
+    tail = ` · all 48 teams used — ${dupCount} bottom team${dupCount > 1 ? 's are' : ' is'} drawn twice, so ${dupCount === 1 ? 'two players share one team' : dupCount + ' pairs of players each share a team'}`;
+  else
+    tail = ' · every team is in play';
+  $('playerInfo').textContent = `${n} players → ${meta.length} pools of ${n} → ${meta.length} teams each${tail}`;
 }
 function renderDrawTab(){
   const done = state.draw && state.draw.completedAt;
@@ -664,35 +730,35 @@ function renderDrawTab(){
   const {teams} = computeScores();
   const grid = $('squadGrid'); grid.innerHTML = '';
   state.players.forEach((name, pi) => {
-    const mine = Object.entries(state.draw.assignments).filter(([,v]) => v === pi).map(([t]) => t)
-      .sort((a,b) => RANKED.findIndex(r => r[0] === a) - RANKED.findIndex(r => r[0] === b));
+    const mine = Object.entries(state.draw.assignments).filter(([,owners]) => owners.includes(pi)).map(([t]) => t)
+      .sort((a,b) => seedOf(a) - seedOf(b));
     const sq = document.createElement('div'); sq.className = 'squad';
     sq.innerHTML = `<h3>👤 ${esc(name)}</h3>` + mine.map(t => {
       const b = TEAM_BAND[t], st = teams[t];
+      const shared = (state.draw.assignments[t] || []).length > 1 ? ' 🔁' : '';
       const status = st.champion ? '👑' : st.out ? '💀' : '';
-      return `<div class="chip"><span>${FLAGS[t]}</span><span>${esc(t)} ${status}</span><span class="mult" style="color:${b.color}">×${b.mult}</span></div>`;
+      return `<div class="chip"><span>${FLAGS[t]}</span><span>${esc(t)}${shared} ${status}</span><span class="mult" style="color:${b.color}">×${b.mult}</span></div>`;
     }).join('');
     grid.appendChild(sq);
   });
 }
 function renderPools(){
   const div = $('poolList'); div.innerHTML = '';
-  const {meta, leftovers} = currentPools();
+  const {meta, leftovers, dupCount, mode} = currentPools();
   const teamRow = (t, dim) => {
-    let owner = '';
-    if (!dim && state.draw && state.draw.completedAt){
-      const pi = state.draw.assignments[t];
-      if (pi !== undefined) owner = `<span class="owner">${esc(state.players[pi])}</span>`;
-    }
+    const shared = (state.draw && state.draw.completedAt && (state.draw.assignments[t] || []).length > 1) ? ' <span class="shared">🔁 shared</span>' : '';
     const b = TEAM_BAND[t];
-    return `<div class="pteam"${dim ? ' style="opacity:.45"' : ''}><span>${FLAGS[t]}</span><span>${esc(t)}</span>
-      <span class="odds">${TEAM_ODDS[t]} · <span style="color:${b.color}">×${b.mult}</span></span>${owner}</div>`;
+    return `<div class="pteam"${dim ? ' style="opacity:.45"' : ''}><span>${FLAGS[t]}</span><span>${esc(t)}${shared}</span>
+      <span class="odds">${TEAM_ODDS[t]} · <span style="color:${b.color}">×${b.mult}</span></span>${dim ? '' : ownerBadges(t, 'owner')}</div>`;
   };
-  meta.forEach(pool => {
+  meta.forEach((pool, i) => {
     const el = document.createElement('div'); el.className = 'pool';
+    // before the draw, flag that the bottom pool will gain a random duplicate
+    const pending = (mode === 'dup' && i === meta.length - 1)
+      ? `<div class="pteam" style="opacity:.6;border:1px dashed var(--line);background:transparent">🔁 +${dupCount} of these drawn a second time at random during the ceremony</div>` : '';
     el.innerHTML = `<h3><span>${pool.emoji}</span><span style="color:${pool.color}">${esc(pool.name)}</span></h3>
       <div class="pdesc">${esc(pool.sub)}</div>
-      <div class="pool-teams">${pool.teams.map(t => teamRow(t, false)).join('')}</div>`;
+      <div class="pool-teams">${pool.uniq.map(t => teamRow(t, false)).join('')}${pending}</div>`;
     div.appendChild(el);
   });
   if (leftovers.length){
@@ -755,11 +821,7 @@ function renderMatches(){
   ms.sort((a,b) => filter === 'upcoming' ? (a.when||0) - (b.when||0) : (b.when||0) - (a.when||0));
   if (!ms.length){ div.innerHTML = '<div class="card">Nothing here yet — check back after kick-off! ⚽</div>'; return; }
   let day = null, html = '';
-  const ownerTag = t => {
-    if (!state.draw || !state.draw.completedAt) return '';
-    const pi = state.draw.assignments[t];
-    return pi === undefined ? '' : `<span class="own">${esc(state.players[pi])}</span>`;
-  };
+  const ownerTag = t => ownerBadges(t);
   for (const m of ms.slice(0, 200)){
     if (m.lonDate !== day){ day = m.lonDate; html += `<div class="match-day">📅 ${new Date(day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>`; }
     const score = m.played
@@ -801,11 +863,7 @@ function renderTables(){
     return;
   }
   const tables = computeGroupTables(parseMatches(state.matches));
-  const ownerTag = t => {
-    if (!state.draw || !state.draw.completedAt) return '';
-    const pi = state.draw.assignments[t];
-    return pi === undefined ? '' : `<span class="own">${esc(state.players[pi])}</span>`;
-  };
+  const ownerTag = t => ownerBadges(t);
   div.innerHTML = tables.map(g => `
     <div class="gtable">
       <h3>${esc(g.name)}</h3>
@@ -853,15 +911,15 @@ const drumTick = () => beep(140 + Math.random()*60, .08, .06, 'square');
 const revealChime = () => { beep(523,.18,.09); setTimeout(()=>beep(784,.3,.09),120); };
 const fanfare = () => [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.4,.1),i*150));
 
-function buildAssignments(){
+function buildDraw(){
   const n = state.players.length;
-  const {pools} = dynamicPools(n);
+  const {pools} = realizePools(n);
   const assignments = {};
-  pools.forEach(teams => {
-    const order = shuffle([...Array(n).keys()]);
-    teams.forEach((team, i) => { assignments[team] = order[i]; });
+  pools.forEach(entries => {
+    const order = shuffle([...Array(n).keys()]); // n distinct players, one per pool entry
+    entries.forEach((team, i) => { (assignments[team] = assignments[team] || []).push(order[i]); });
   });
-  return assignments;
+  return {pools, assignments, completedAt: null};
 }
 async function runCeremony(replayOnly){
   const names = state.players.map(n => (n||'').trim());
@@ -869,10 +927,12 @@ async function runCeremony(replayOnly){
     if (names.length < MIN_PLAYERS){ toast('⚠️ Need at least ' + MIN_PLAYERS + ' players!'); return; }
     if (names.some(n => !n)){ toast('⚠️ Fill in every player name first!'); return; }
     state.players = names;
-    state.draw = {assignments: buildAssignments(), completedAt: null};
+    state.draw = buildDraw();
     save();
   }
   const assignments = state.draw.assignments;
+  const ownerQ = {}; for (const t in assignments) ownerQ[t] = [...assignments[t]]; // consume per reveal
+  const revealed = new Set();
   cerFast = false; cerCancelled = false;
   $('skipBtn').style.display = ''; $('closeCerBtn').style.display = 'none';
   $('muteBtn').textContent = state.muted ? '🔇 Sound off' : '🔊 Sound on';
@@ -903,14 +963,17 @@ async function runCeremony(replayOnly){
     // reveal weakest first, biggest name last
     for (let ti = pool.teams.length - 1; ti >= 0; ti--){
       const team = pool.teams[ti];
-      const owner = assignments[team];
+      const owner = ownerQ[team].shift();
+      const repeat = revealed.has(team); revealed.add(team);
       card.className = 'big-card thinking'; card.textContent = '❓'; ann.innerHTML = 'Drawing…';
       const ticks = cerFast ? 1 : 8;
       for (let k=0;k<ticks;k++){ drumTick(); await sleep(D(140)); if (cerCancelled) return; }
       card.className = 'big-card flip';
       card.innerHTML = `${FLAGS[team]}<div class="tname">${esc(team)}</div>`;
       revealChime();
-      ann.innerHTML = `${FLAGS[team]} <b>${esc(team)}</b> goes to… <span class="to">${esc(state.players[owner])}!</span>`;
+      ann.innerHTML = repeat
+        ? `🔁 ${FLAGS[team]} <b>${esc(team)}</b> AGAIN — shared with <span class="to">${esc(state.players[owner])}!</span>`
+        : `${FLAGS[team]} <b>${esc(team)}</b> goes to… <span class="to">${esc(state.players[owner])}!</span>`;
       slotEls.forEach(s => s.classList.remove('justgot'));
       slotEls[owner].classList.add('justgot');
       slotEls[owner].querySelector('.got').innerHTML += `<span title="${esc(team)}">${FLAGS[team]}</span>`;
@@ -990,10 +1053,11 @@ async function doImport(){
   }
   try{
     const data = JSON.parse($('importText').value.trim());
-    if (!data.players || data.players.length < MIN_PLAYERS || data.players.length > MAX_PLAYERS
-        || !data.draw || !data.draw.assignments
-        || Object.values(data.draw.assignments).some(v => !Number.isInteger(v) || v < 0 || v >= data.players.length)) throw new Error('bad format');
-    state.players = data.players; state.draw = data.draw;
+    const np = data.players ? data.players.length : 0;
+    const a = data.draw && data.draw.assignments;
+    if (np < MIN_PLAYERS || np > MAX_PLAYERS || !a
+        || Object.values(a).some(owners => !Array.isArray(owners) || owners.some(pi => !Number.isInteger(pi) || pi < 0 || pi >= np))) throw new Error('bad format');
+    state.players = data.players; state.draw = data.draw; normalizeDraw();
     if (!state.draw.completedAt) state.draw.completedAt = Date.now();
     save(); closeModal('importModal'); renderAll(); toast('✅ Draw imported!');
     refreshResults(true);
