@@ -127,6 +127,22 @@
   .match .score .pens{display:block; font-family:'Inter'; font-size:10px; color:var(--ink-dim); font-weight:700}
   .match .score.upcoming{color:var(--ink-dim); font-size:12px; font-family:'Inter'; font-weight:700}
   .match .round-tag{grid-column:1/-1; font-size:10px; color:var(--ink-dim); font-weight:700; text-transform:uppercase; letter-spacing:.5px}
+  /* ---------- group tables ---------- */
+  .gt-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:14px}
+  .gtable{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px}
+  .gtable h3{font-size:15px; margin-bottom:10px; color:var(--cyan)}
+  .gtable table{width:100%; border-collapse:collapse; font-size:13px}
+  .gtable th{color:var(--ink-dim); font-size:10px; text-transform:uppercase; letter-spacing:.3px; text-align:right; padding:4px 3px; border-bottom:1px solid var(--line)}
+  .gtable th:first-child{text-align:left}
+  .gtable td{padding:6px 3px; text-align:right; border-bottom:1px solid rgba(44,49,112,.45)}
+  .gtable tr:last-child td{border-bottom:none}
+  .gtable td.tm{text-align:left; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:128px; padding-left:6px}
+  .gtable td.pts{font-weight:800; color:var(--ink)}
+  .gtable tr.q-auto td.tm{box-shadow:inset 4px 0 0 var(--green)}
+  .gtable tr.q-third td.tm{box-shadow:inset 4px 0 0 var(--gold)}
+  .gtable .own{font-size:9px; font-weight:800; color:var(--gold); background:rgba(255,211,77,.13); border-radius:999px; padding:1px 6px; margin-left:4px}
+  .gt-legend{color:var(--ink-dim); font-size:12px; font-weight:700; margin-bottom:14px}
+  .gt-legend .q-auto{color:var(--green)} .gt-legend .q-third{color:var(--gold)}
   /* ---------- rules ---------- */
   .rules-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:16px}
   .rule-card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px}
@@ -188,6 +204,7 @@
     <button data-tab="leaderboard">🏆 Leaderboard</button>
     <button data-tab="pools">🌊 Pools</button>
     <button data-tab="matches">📅 Matches</button>
+    <button data-tab="tables">📊 Tables</button>
     <button data-tab="rules">📜 Rules</button>
   </nav>
 
@@ -256,6 +273,19 @@
     <div id="matchList"></div>
   </section>
 
+  <!-- ============ TABLES ============ -->
+  <section id="tab-tables">
+    <h2>World Cup Tables</h2>
+    <p class="lead">The real tournament group standings, computed live from the results.
+    Top two in each group advance to the Round of 32, joined by the <b>eight best third-placed</b> teams.</p>
+    <div class="toolbar">
+      <button class="btn small" id="refreshBtn3">🔄 Refresh results</button>
+      <span class="muted" id="lastUpdated3"></span>
+    </div>
+    <div class="gt-legend"><span class="q-auto">▌</span> Top two — through &nbsp; <span class="q-third">▌</span> Third — hoping &nbsp; <span style="color:var(--ink-dim)">▌</span> Bottom — sofa</div>
+    <div class="gt-grid" id="tablesList"></div>
+  </section>
+
   <!-- ============ RULES ============ -->
   <section id="tab-rules">
     <h2>The Sacred Rules</h2>
@@ -309,9 +339,9 @@
       <div class="rule-card">
         <h3>👑 Winning the sweepstake</h3>
         <ul>
-          <li>Most points after the Final wins the family trophy and 12 months of unbearable smugness.</li>
-          <li>Tiebreak 1: most total goals scored by your teams.</li>
-          <li>Tiebreak 2: whoever owns the team eliminated <i>earliest</i> wins (a consolation for suffering).</li>
+          <li>Most points after the Final wins the family trophy and <b>four years</b> of unbearable smugness — no rematch until 2030.</li>
+          <li>Tiebreak 1: whoever owns the team that went <i>furthest</i> in the tournament.</li>
+          <li>Tiebreak 2: most total goals scored by your teams.</li>
         </ul>
       </div>
       <div class="rule-card">
@@ -558,23 +588,26 @@ function computeScores(){
     st.total = (st.matchPts + st.goalPts + st.csPts + st.bonusPts) * mult;
   }
   // player totals
-  const players = state.players.map((name, i) => ({name, i, total:0, goals:0, teams:[]}));
+  const STAGE_RANK = {Group:0, R32:1, R16:2, QF:3, SF:4, Final:5, CHAMPION:6};
+  const players = state.players.map((name, i) => ({name, i, total:0, goals:0, best:0, teams:[]}));
   if (state.draw){
     for (const [team, pi] of Object.entries(state.draw.assignments)){
       const st = teams[team];
       players[pi].total += st.total;
       players[pi].goals += st.gf;
+      players[pi].best = Math.max(players[pi].best, STAGE_RANK[st.stage] || 0);
       players[pi].teams.push(st);
     }
     players.forEach(p => p.teams.sort((a,b) => RANKED.findIndex(r => r[0] === a.team) - RANKED.findIndex(r => r[0] === b.team)));
   }
-  players.sort((a,b) => b.total - a.total || b.goals - a.goals);
+  // tiebreaks: 1) whoever's team went furthest, 2) total goals scored by their teams
+  players.sort((a,b) => b.total - a.total || b.best - a.best || b.goals - a.goals);
   return {teams, players, matches};
 }
 
 /* ===================== FETCH RESULTS ===================== */
 async function refreshResults(silent){
-  const btns = [$('refreshBtn1'), $('refreshBtn2')];
+  const btns = [$('refreshBtn1'), $('refreshBtn2'), $('refreshBtn3')];
   btns.forEach(b => { b.disabled = true; b.textContent = '⏳ Fetching…'; });
   try{
     const res = await fetch(DATA_URL + '?t=' + Date.now());
@@ -741,16 +774,60 @@ function renderMatches(){
   }
   div.innerHTML = html;
 }
+function computeGroupTables(matches){
+  const groups = {};
+  for (const m of matches){
+    if (!m.group || !m.real) continue;
+    const g = groups[m.group] = groups[m.group] || {};
+    for (const t of [m.t1, m.t2]) g[t] = g[t] || {team:t, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
+    if (!m.played) continue;
+    const A = g[m.t1], B = g[m.t2];
+    A.p++; B.p++;
+    A.gf += m.g1; A.ga += m.g2; B.gf += m.g2; B.ga += m.g1;
+    if (m.g1 > m.g2){ A.w++; B.l++; A.pts += 3; }
+    else if (m.g2 > m.g1){ B.w++; A.l++; B.pts += 3; }
+    else { A.d++; B.d++; A.pts++; B.pts++; }
+  }
+  return Object.keys(groups).sort().map(name => ({
+    name,
+    rows: Object.values(groups[name]).sort((a,b) =>
+      b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf || a.team.localeCompare(b.team))
+  }));
+}
+function renderTables(){
+  const div = $('tablesList');
+  if (!state.matches){
+    div.innerHTML = '<div class="card" style="grid-column:1/-1">No data yet — hit <b>🔄 Refresh results</b> to load the groups.</div>';
+    return;
+  }
+  const tables = computeGroupTables(parseMatches(state.matches));
+  const ownerTag = t => {
+    if (!state.draw || !state.draw.completedAt) return '';
+    const pi = state.draw.assignments[t];
+    return pi === undefined ? '' : `<span class="own">${esc(state.players[pi])}</span>`;
+  };
+  div.innerHTML = tables.map(g => `
+    <div class="gtable">
+      <h3>${esc(g.name)}</h3>
+      <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead><tbody>` +
+      g.rows.map((r, i) => {
+        const cls = i < 2 ? 'q-auto' : i === 2 ? 'q-third' : '';
+        const gd = r.gf - r.ga;
+        return `<tr class="${cls}"><td class="tm">${FLAGS[r.team]||''} ${esc(r.team)}${ownerTag(r.team)}</td>
+          <td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf}</td><td>${r.ga}</td>
+          <td>${gd > 0 ? '+' + gd : gd}</td><td class="pts">${r.pts}</td></tr>`;
+      }).join('') + '</tbody></table></div>').join('');
+}
 function renderMultTable(){
   $('multTable').innerHTML = BANDS.map((b, i) =>
     `<tr><td>${b.emoji} ${b.name} <span class="muted">(seeds ${i*8+1}–${i*8+8})</span></td><td style="color:${b.color}">×${b.mult}</td></tr>`).join('');
 }
 function renderUpdated(){
   const txt = state.fetchedAt ? 'Updated ' + new Date(state.fetchedAt).toLocaleString() : '';
-  $('lastUpdated1').textContent = txt; $('lastUpdated2').textContent = txt;
+  $('lastUpdated1').textContent = txt; $('lastUpdated2').textContent = txt; $('lastUpdated3').textContent = txt;
 }
 function renderAll(){
-  renderKickoff(); renderDrawTab(); renderPools(); renderLeaderboard(); renderMatches(); renderMultTable(); renderUpdated();
+  renderKickoff(); renderDrawTab(); renderPools(); renderLeaderboard(); renderMatches(); renderTables(); renderMultTable(); renderUpdated();
 }
 
 /* ===================== DRAW CEREMONY ===================== */
@@ -969,6 +1046,7 @@ $('pasteBtn').addEventListener('click', () => openModal('pasteModal'));
 $('doPasteBtn').addEventListener('click', doPaste);
 $('refreshBtn1').addEventListener('click', () => refreshResults(false));
 $('refreshBtn2').addEventListener('click', () => refreshResults(false));
+$('refreshBtn3').addEventListener('click', () => refreshResults(false));
 $('matchFilter').addEventListener('change', renderMatches);
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
 document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
