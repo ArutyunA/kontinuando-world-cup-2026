@@ -252,7 +252,7 @@
   <!-- ============ POOLS ============ -->
   <section id="tab-pools">
     <h2>The Pools</h2>
-    <p class="lead">All 48 teams ranked by real bookmaker odds to win the tournament (BetMGM, June 2026), then dealt into pools sized to the player count. The longer the odds, the bigger the points multiplier — and any leftover teams are always the lowest-ranked ones.</p>
+    <p class="lead">Seven players, so all 48 teams are ranked by real bookmaker odds (BetMGM, June 2026) and dealt into <b>7 pools of 7</b> — everyone draws one team per pool for an equal squad of seven. The longer the odds, the bigger the points multiplier. The one extra slot is filled by drawing a single bottom-pool team twice, so two players <b>share</b> it (🔁) and both score its points — no team sits out.</p>
     <div id="poolList"></div>
   </section>
 
@@ -382,8 +382,8 @@
 <!-- ============ MODALS ============ -->
 <div class="modal-bg" id="exportModal">
   <div class="modal">
-    <h3>📤 Share this draw</h3>
-    <p class="muted">Copy this code and send it to the family group chat. Anyone can paste it into "Import draw" on their own device to see the same squads and leaderboard.</p>
+    <h3>📤 Publish this draw to everyone</h3>
+    <p class="muted"><b>To make this draw appear on every family device automatically:</b> copy this code and send it to the organiser to publish (it becomes the site's <code>draw.json</code>). Once published, everyone sees the same squads and leaderboard with nothing to import.<br><br>In a pinch, anyone can also paste it straight into "Import draw" on their own device.</p>
     <textarea id="exportText" readonly></textarea>
     <button class="btn small" id="copyExportBtn">📋 Copy to clipboard</button>
     <button class="btn small secondary" data-close="exportModal">Close</button>
@@ -522,8 +522,13 @@ function currentPools(){
 
 /* ===================== STATE ===================== */
 const LS_KEY = 'wc26-sweepstake-v1';
-let state = {players:['','','','','','','',''], draw:null, matches:null, fetchedAt:null, muted:false};
+const PLAYER_COUNT = 7; // confirmed family size
+let state = {players:Array(PLAYER_COUNT).fill(''), draw:null, matches:null, fetchedAt:null, muted:false};
 try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.players) state = Object.assign(state, s); } catch(e){}
+// Until a draw is locked in, default a fresh device to the confirmed player count.
+if ((!state.draw || !state.draw.completedAt) && state.players.every(n => !(n||'').trim()) && state.players.length !== PLAYER_COUNT){
+  state.players = Array(PLAYER_COUNT).fill('');
+}
 // Upgrade draws saved before teams could have multiple owners: assignments {team:pi} → {team:[pi]}
 function normalizeDraw(){
   const d = state.draw;
@@ -1115,15 +1120,38 @@ $('matchFilter').addEventListener('change', renderMatches);
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
 document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
 
+// The published, family-wide draw. Once draw.json is committed to the site it is the single
+// source of truth: every device loads it on open, so the squads & leaderboard match everywhere.
+async function loadPublishedDraw(silent){
+  try{
+    const res = await fetch('draw.json?t=' + Date.now());
+    if (!res.ok) return false;                       // 404 = no published draw yet
+    const data = await res.json();
+    if (!data.draw || !data.draw.assignments || !Array.isArray(data.players)) return false;
+    const incoming = JSON.stringify({p:data.players, d:data.draw});
+    const current = JSON.stringify({p:state.players, d:state.draw});
+    if (incoming === current) return true;            // already in sync
+    state.players = data.players; state.draw = data.draw; normalizeDraw();
+    if (!state.draw.completedAt) state.draw.completedAt = Date.now();
+    save(); renderAll();
+    if (!silent) toast('📥 Loaded the family draw');
+    return true;
+  } catch(e){ return false; }
+}
+
 renderAll();
 setInterval(renderKickoff, 30000);
 // live updates: refresh on load if stale, then every 10 minutes while the page is open,
 // and whenever the tab comes back into focus
 const STALE_MS = 10*60*1000;
+loadPublishedDraw(true);
 if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
-setInterval(() => refreshResults(true), STALE_MS);
+setInterval(() => { loadPublishedDraw(true); refreshResults(true); }, STALE_MS);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS)) refreshResults(true);
+  if (!document.hidden){
+    loadPublishedDraw(true);
+    if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
+  }
 });
 </script>
 </body>

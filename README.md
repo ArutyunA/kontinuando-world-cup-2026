@@ -24,10 +24,21 @@ A single-file website (`index.html`) for the family sweepstake — no backend, n
 ## Draw day
 1. Open the site, add/remove players and enter names on **The Draw** tab.
 2. Hit **Begin the Draw Ceremony** — teams reveal one by one with sound and confetti, ending with the Giants.
-3. After the draw, click **Share / export draw** and paste the code into the family chat.
-   Everyone else uses **Import a draw** on their device so all phones show the same squads.
+3. After the draw, click **Share / export draw** and send the code to the organiser.
 4. Resetting the draw (or importing over a locked one) requires the organiser password —
    the organiser has it; it is not written down anywhere in this repo.
+
+### Publishing the draw to every device (no manual import)
+The draw is the same for everyone automatically once it is published as `draw.json`:
+
+1. Run the ceremony once (e.g. on the TV with the family), then **Share / export draw** and copy the code.
+2. Save that code as a file named `draw.json` in the repo root and push it (the export format —
+   `{"players":[...],"draw":{...}}` — *is* the `draw.json` format). Ask Claude to do this for you.
+3. Every device now loads `draw.json` on open and shows the identical squads & leaderboard — no import needed.
+   The site re-checks it on load, every 10 minutes, and when a tab regains focus.
+
+To change the draw later: reset (password), re-run the ceremony, and publish the new `draw.json`.
+The default player count is **7** (configurable via `PLAYER_COUNT` in `index.html`).
 
 ## Keeping scores up to date
 - The site refreshes itself: on every visit, every 10 minutes while open, and when you switch back
