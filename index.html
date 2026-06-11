@@ -294,6 +294,7 @@
           <li>With <b>N</b> players, each pool holds N consecutive seeds and everyone draws one team per pool — equal squads, always.</li>
           <li>Teams that don't divide evenly <b>sit out</b>, starting from the lowest-ranked. They score points for nobody.</li>
           <li>Changing the players after the draw means a redraw — reset the draw first.</li>
+          <li>Resetting (or importing over) a locked draw needs the <b>organiser password</b> 🔒 — no "accidental" redraws when your Giants flop.</li>
         </ul>
       </div>
       <div class="rule-card">
@@ -879,6 +880,24 @@ function confettiBurst(){
   })(t0);
 }
 
+/* ===================== RESET PASSWORD ===================== */
+// Only the hash lives in the source — guards against accidental (and cheeky) draw resets.
+const RESET_SHA256 = '6038c7372f4b7f98fd596cf024b6f9863116b68b6a27c53d09a5efadef29a6a6';
+const RESET_DJB2 = 2075001596; // fallback for browsers without crypto.subtle
+async function askResetPassword(){ // true = correct, false = wrong, null = cancelled
+  const pw = prompt('🔒 This wipes the draw for this device. Enter the organiser password:');
+  if (pw === null) return null;
+  const s = pw.trim();
+  try{
+    if (window.crypto && crypto.subtle){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+      return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join('') === RESET_SHA256;
+    }
+  }catch(e){}
+  let h = 5381; for (const c of s) h = ((h*33) ^ c.codePointAt(0)) >>> 0;
+  return h === RESET_DJB2;
+}
+
 /* ===================== EXPORT / IMPORT ===================== */
 function openModal(id){ $(id).classList.add('show'); }
 function closeModal(id){ $(id).classList.remove('show'); }
@@ -886,7 +905,12 @@ function doExport(){
   $('exportText').value = JSON.stringify({players: state.players, draw: state.draw});
   openModal('exportModal');
 }
-function doImport(){
+async function doImport(){
+  if (state.draw && state.draw.completedAt){ // overwriting an existing draw = a reset, same lock
+    const ok = await askResetPassword();
+    if (ok === null) return;
+    if (!ok){ toast('⛔ Wrong password — the current draw stays!'); return; }
+  }
   try{
     const data = JSON.parse($('importText').value.trim());
     if (!data.players || data.players.length < MIN_PLAYERS || data.players.length > MAX_PLAYERS
@@ -926,7 +950,10 @@ $('muteBtn').addEventListener('click', () => {
   state.muted = !state.muted; save();
   $('muteBtn').textContent = state.muted ? '🔇 Sound off' : '🔊 Sound on';
 });
-$('resetBtn').addEventListener('click', () => {
+$('resetBtn').addEventListener('click', async () => {
+  const ok = await askResetPassword();
+  if (ok === null) return;
+  if (!ok){ toast('⛔ Wrong password — the draw stays!'); return; }
   if (confirm('Really reset the draw? All squads will be wiped (results data is kept).')){
     state.draw = null; save(); renderAll();
   }

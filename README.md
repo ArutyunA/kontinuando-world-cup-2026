@@ -23,6 +23,8 @@ A single-file website (`index.html`) for the family sweepstake — no backend, n
 2. Hit **Begin the Draw Ceremony** — teams reveal one by one with sound and confetti, ending with the Giants.
 3. After the draw, click **Share / export draw** and paste the code into the family chat.
    Everyone else uses **Import a draw** on their device so all phones show the same squads.
+4. Resetting the draw (or importing over a locked one) requires the organiser password —
+   the organiser has it; it is not written down anywhere in this repo.
 
 ## Keeping scores up to date
 - The site refreshes itself: on every visit, every 10 minutes while open, and when you switch back
