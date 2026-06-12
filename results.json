@@ -31,7 +31,7 @@
     },
     {
       "team1": "Canada",
-      "team2": "Bosnia-Herzegovina",
+      "team2": "Bosnia & Herzegovina",
       "round": "Group B",
       "date": "2026-06-12",
       "time": "19:00",
@@ -215,7 +215,7 @@
     },
     {
       "team1": "Switzerland",
-      "team2": "Bosnia-Herzegovina",
+      "team2": "Bosnia & Herzegovina",
       "round": "Group B",
       "date": "2026-06-18",
       "time": "19:00",
@@ -406,7 +406,7 @@
       "group": "Group B"
     },
     {
-      "team1": "Bosnia-Herzegovina",
+      "team1": "Bosnia & Herzegovina",
       "team2": "Qatar",
       "round": "Group B",
       "date": "2026-06-24",
