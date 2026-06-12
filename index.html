@@ -415,7 +415,7 @@
 <script>
 'use strict';
 /* ===================== DATA ===================== */
-const DATA_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+const DATA_URL = './results.json';
 const KICKOFF = new Date('2026-06-11T19:00:00Z'); // Mexico v South Africa, Estadio Azteca
 const FINAL_DATE = new Date('2026-07-19T23:59:00Z');
 
@@ -679,7 +679,7 @@ async function refreshResults(silent){
     const res = await fetch(DATA_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (!data.matches || !data.matches.length) throw new Error('no matches in feed');
+    if (!data.matches) throw new Error('no matches in feed');
     state.matches = data; state.fetchedAt = Date.now(); save();
     renderAll();
     if (!silent) toast('✅ Results updated — ' + parseMatches(data).filter(m=>m.played).length + ' matches played');
