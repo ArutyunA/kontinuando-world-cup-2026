@@ -258,7 +258,7 @@
   <!-- ============ MATCHES ============ -->
   <section id="tab-matches">
     <h2>Matches & Results</h2>
-    <p class="lead">All kick-off times shown in <b>London time</b>. Scores update <b>automatically</b> — they're fetched from a live data feed every few minutes, so there's nothing to refresh.</p>
+    <p class="lead">All kick-off times shown in <b>London time</b>. Scores update <b>automatically</b> — while a match is in play they refresh roughly every 20 seconds, so the table stays close to live with nothing to press.</p>
     <div class="toolbar">
       <select id="matchFilter" style="background:var(--card2); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-weight:700">
         <option value="played">Played</option>
@@ -345,8 +345,8 @@
       <div class="rule-card">
         <h3>📡 How scores update</h3>
         <ul>
-          <li>The leaderboard refreshes itself automatically — on every visit and every 10 minutes while the page is open.</li>
-          <li>Scores are pulled from a live data feed and updated every few minutes, so new results appear shortly after full time — completely hands-off.</li>
+          <li>While a match is being played the page refreshes itself about every 20 seconds, so the leaderboard tracks goals close to live.</li>
+          <li>Between matches it idles, then picks straight back up at the next kick-off — completely hands-off.</li>
           <li>Nothing to press: just open the page and the latest scores load themselves.</li>
         </ul>
       </div>
@@ -1107,17 +1107,25 @@ async function loadPublishedDraw(silent){
 
 renderAll();
 setInterval(renderKickoff, 30000);
-// live updates: refresh on load if stale, then every 10 minutes while the page is open,
-// and whenever the tab comes back into focus
-const STALE_MS = 10*60*1000;
+// Live updates. results.json carries a `live` flag (true while any match is in
+// play), so we poll fast during games and idle between them. The leaderboard and
+// tables recompute on every refresh via renderAll(), so they track the live score.
+const LIVE_MS = 20*1000, IDLE_MS = 5*60*1000;
+const isLive = () => !!(state.matches && state.matches.live);
+let pollTimer = null;
+function scheduleNextPoll(){
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(runPoll, isLive() ? LIVE_MS : IDLE_MS);
+}
+async function runPoll(){
+  await loadPublishedDraw(true);
+  await refreshResults(true);
+  scheduleNextPoll();
+}
 loadPublishedDraw(true);
-if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
-setInterval(() => { loadPublishedDraw(true); refreshResults(true); }, STALE_MS);
+refreshResults(true).then(scheduleNextPoll);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden){
-    loadPublishedDraw(true);
-    if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
-  }
+  if (!document.hidden) runPoll();   // refresh immediately and re-arm the timer
 });
 </script>
 </body>
