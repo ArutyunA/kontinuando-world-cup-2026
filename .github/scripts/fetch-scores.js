@@ -27,6 +27,7 @@ const NAME_MAP = {
   "Côte d'Ivoire":                'Ivory Coast',
   'Ivory Coast':                  'Ivory Coast',
   'Bosnia and Herzegovina':       'Bosnia & Herzegovina',
+  'Bosnia-Herzegovina':           'Bosnia & Herzegovina',
   'Czechia':                      'Czech Republic',
   'Democratic Republic of Congo': 'DR Congo',
   'Congo DR':                     'DR Congo',
@@ -40,7 +41,11 @@ const NAME_MAP = {
 // football-data.org stage  →  app round string
 const STAGE_ROUND = {
   GROUP_STAGE:              null,   // derived from the group field below
-  ROUND_OF_32:             'Round of 32',
+  LAST_32:                 'Round of 32',   // codes actually used by the API
+  LAST_16:                 'Round of 16',
+  LAST_8:                  'Quarter-final',
+  LAST_4:                  'Semi-final',
+  ROUND_OF_32:             'Round of 32',   // aliases, kept just in case
   ROUND_OF_16:             'Round of 16',
   QUARTER_FINALS:          'Quarter-final',
   SEMI_FINALS:             'Semi-final',
@@ -121,8 +126,9 @@ async function fetchAndBuild() {
   let nextKickoffMs = Infinity; // ms until the next match that hasn't started yet
 
   const matches = feed.matches.map(m => {
-    const team1 = mapTeam(m.homeTeam.name);
-    const team2 = mapTeam(m.awayTeam.name);
+    // Undecided knockout fixtures come through with null team names.
+    const team1 = mapTeam(m.homeTeam.name) || 'TBD';
+    const team2 = mapTeam(m.awayTeam.name) || 'TBD';
     const round = mapRound(m.stage, m.group);
     const isGroup = m.stage === 'GROUP_STAGE';
 
@@ -142,14 +148,18 @@ async function fetchAndBuild() {
     const s = m.score;
     const started = !PENDING_STATUSES.has(m.status);
     if (s && s.fullTime.home !== null && started) {
-      const score = { ft: [s.fullTime.home, s.fullTime.away] };
-      if (s.duration === 'EXTRA_TIME' || s.duration === 'PENALTY_SHOOTOUT') {
-        // extraTime here is the 120-min total (incl. regular-time goals),
-        // which is exactly what the app's `et` field expects.
-        if (s.extraTime.home !== null) score.et = [s.extraTime.home, s.extraTime.away];
-      }
-      if (s.duration === 'PENALTY_SHOOTOUT' && s.penalties.home !== null) {
-        score.p = [s.penalties.home, s.penalties.away];
+      const score = {};
+      if (s.duration === 'REGULAR' || !s.regularTime || s.regularTime.home === null) {
+        score.ft = [s.fullTime.home, s.fullTime.away];
+      } else {
+        // Match went beyond 90'. In football-data.org v4, fullTime is the
+        // 120-min total and regularTime holds the 90' score — which map to
+        // the app's `et` (120-min total) and `ft` (90' score) respectively.
+        score.ft = [s.regularTime.home, s.regularTime.away];
+        score.et = [s.fullTime.home, s.fullTime.away];
+        if (s.penalties && s.penalties.home !== null) {
+          score.p = [s.penalties.home, s.penalties.away];
+        }
       }
       entry.score = score;
     }

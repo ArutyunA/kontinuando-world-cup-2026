@@ -263,8 +263,6 @@
       <select id="matchFilter" style="background:var(--card2); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-weight:700">
         <option value="played">Played</option>
         <option value="upcoming">Upcoming</option>
-        <option value="ours">Family teams only</option>
-        <option value="all">Everything</option>
       </select>
       <span class="muted" id="lastUpdated2"></span>
     </div>
@@ -796,14 +794,12 @@ function renderMatches(){
   const div = $('matchList');
   const filter = $('matchFilter').value;
   if (!state.matches){
-    div.innerHTML = '<div class="card">No match data yet — hit <b>🔄 Refresh results</b> to pull the fixtures & scores.</div>';
+    div.innerHTML = '<div class="card">No match data yet — scores load automatically, check back in a moment.</div>';
     return;
   }
   let ms = parseMatches(state.matches);
-  const ours = new Set(state.draw ? Object.keys(state.draw.assignments) : []);
   if (filter === 'played') ms = ms.filter(m => m.played);
-  else if (filter === 'upcoming') ms = ms.filter(m => !m.played);
-  else if (filter === 'ours') ms = ms.filter(m => ours.has(m.t1) || ours.has(m.t2));
+  else ms = ms.filter(m => !m.played);
   ms.sort((a,b) => filter === 'upcoming' ? (a.when||0) - (b.when||0) : (b.when||0) - (a.when||0));
   if (!ms.length){ div.innerHTML = '<div class="card">Nothing here yet — check back after kick-off! ⚽</div>'; return; }
   let day = null, html = '';
