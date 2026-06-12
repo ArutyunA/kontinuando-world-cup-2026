@@ -94,16 +94,31 @@ async function main() {
       if (writeIfChanged(built.data)) commitIfChanged();
       errors = 0;
       console.log(`poll ok — live=${status.live} played=${status.played} ` +
-                  `nextKickoff=${Number.isFinite(status.nextKickoffMs) ? Math.round(status.nextKickoffMs / 60000) + 'm' : 'none'}`);
+                  `nextKickoff=${Number.isFinite(status.nextKickoffMs) ? Math.round(status.nextKickoffMs / 60000) + 'm' : 'none'} ` +
+                  `reqsLeft=${status.requestsAvailable ?? '?'}/min`);
     } catch (err) {
+      // 429 is expected back-pressure, not a failure: wait out the window and retry.
+      if (err.rateLimited) {
+        const waitMs = (err.resetSeconds + 1) * 1000;
+        console.warn(`Rate limited — sleeping ${err.resetSeconds + 1}s until the counter resets.`);
+        await sleep(waitMs);
+        continue;
+      }
       if (++errors >= MAX_ERRORS) { console.error(`Giving up after ${errors} errors:`, err.message); return; }
       console.error(`poll error (${errors}/${MAX_ERRORS}):`, err.message);
       await sleep(MED_MS);
       continue;
     }
 
-    const next = cadence(status);
+    let next = cadence(status);
     if (next === null) { console.log('No match imminent — exiting; the schedule will restart the loop.'); return; }
+    // Self-throttle: if we're down to the last request this minute, wait for the
+    // window to reset before the next call so we never trip the 429 limit.
+    if (status.requestsAvailable != null && status.requestsAvailable <= 1) {
+      const resetMs = ((status.resetSeconds ?? 60) + 1) * 1000;
+      next = Math.max(next, resetMs);
+      console.warn(`Only ${status.requestsAvailable} request(s) left this minute — backing off ${Math.round(next / 1000)}s.`);
+    }
     await sleep(next);
   }
   console.log('Max runtime reached — exiting; the queued run will take over.');

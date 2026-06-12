@@ -60,7 +60,9 @@ const mapRound = (stage, group) =>
     ? (group ? group.replace(/^GROUP_/, 'Group ') : 'Group Stage')
     : (STAGE_ROUND[stage] || stage);
 
-function fetchJson(url) {
+// Resolves { statusCode, headers, body } for any HTTP status; rejects only on
+// a network/transport error. The caller inspects the status + rate headers.
+function fetchRaw(url) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
     https.get(
@@ -68,31 +70,50 @@ function fetchJson(url) {
       res => {
         let body = '';
         res.on('data', d => { body += d; });
-        res.on('end', () => {
-          if (res.statusCode !== 200) {
-            reject(new Error(`HTTP ${res.statusCode}: ${body.slice(0, 300)}`));
-            return;
-          }
-          try { resolve(JSON.parse(body)); }
-          catch (e) { reject(new Error('JSON parse error: ' + e.message)); }
-        });
+        res.on('end', () => resolve({ statusCode: res.statusCode, headers: res.headers, body }));
       }
     ).on('error', reject);
   });
 }
 
+// football-data.org rate-limit headers (Node lowercases header names).
+const intHeader = (headers, name) => {
+  const v = parseInt(headers[name], 10);
+  return Number.isFinite(v) ? v : null;
+};
+
 /**
  * Fetch the competition feed and build the app payload.
  * Returns { data, status } where
  *   data   = { live, matches }   (written to results.json)
- *   status = { live, nextKickoffMs, played }   (drives the loop cadence)
+ *   status = { live, nextKickoffMs, played, requestsAvailable, resetSeconds }
+ *            (drives the loop cadence + self-throttling)
+ *
+ * On HTTP 429 throws an error tagged { rateLimited:true, resetSeconds } so the
+ * loop can sleep until the window resets instead of hammering the API.
  */
 async function fetchAndBuild() {
   if (!API_KEY) {
     throw new Error('FOOTBALL_DATA_API_KEY is not set — add it as a GitHub secret (free key at football-data.org).');
   }
 
-  const feed = await fetchJson(`https://api.football-data.org/v4/competitions/${COMPETITION}/matches`);
+  const res = await fetchRaw(`https://api.football-data.org/v4/competitions/${COMPETITION}/matches`);
+  const requestsAvailable = intHeader(res.headers, 'x-requests-available-minute');
+  const resetSeconds      = intHeader(res.headers, 'x-requestcounter-reset');
+
+  if (res.statusCode === 429) {
+    const err = new Error('429 Too Many Requests — rate limited');
+    err.rateLimited = true;
+    err.resetSeconds = resetSeconds != null ? resetSeconds : 60;
+    throw err;
+  }
+  if (res.statusCode !== 200) {
+    throw new Error(`HTTP ${res.statusCode}: ${res.body.slice(0, 300)}`);
+  }
+
+  let feed;
+  try { feed = JSON.parse(res.body); }
+  catch (e) { throw new Error('JSON parse error: ' + e.message); }
   if (!Array.isArray(feed.matches)) throw new Error('Unexpected API response – no matches array');
 
   const now = Date.now();
@@ -138,7 +159,7 @@ async function fetchAndBuild() {
   const played = matches.filter(m => m.score).length;
   return {
     data:   { live, matches },
-    status: { live, nextKickoffMs, played },
+    status: { live, nextKickoffMs, played, requestsAvailable, resetSeconds },
   };
 }
 
