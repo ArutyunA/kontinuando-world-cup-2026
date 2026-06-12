@@ -144,6 +144,7 @@ async function fetchAndBuild() {
 
     const entry = { team1, team2, round, date, time };
     if (isGroup) entry.group = round; // app uses the group field for group-stage rows
+    if (LIVE_STATUSES.has(m.status)) entry.live = true; // match in play → score is provisional
 
     const s = m.score;
     const started = !PENDING_STATUSES.has(m.status);
