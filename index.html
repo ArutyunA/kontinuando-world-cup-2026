@@ -243,7 +243,6 @@
     <h2>Leaderboard</h2>
     <p class="lead">Underdog Multiplier scoring — every win, draw and goal counts, and the unlikelier your team, the more it's worth. Tap a row for the full breakdown.</p>
     <div class="toolbar">
-      <button class="btn small" id="refreshBtn1">🔄 Refresh results</button>
       <span class="muted" id="lastUpdated1"></span>
     </div>
     <div id="lbList"></div>
@@ -259,10 +258,8 @@
   <!-- ============ MATCHES ============ -->
   <section id="tab-matches">
     <h2>Matches & Results</h2>
-    <p class="lead">All kick-off times shown in <b>London time</b>. Results auto-load from the free <b>openfootball</b> public dataset and refresh every 10 minutes. If it's ever behind, paste results in manually.</p>
+    <p class="lead">All kick-off times shown in <b>London time</b>. Scores update <b>automatically</b> — while a match is in play they refresh roughly every 20 seconds, so the table stays close to live with nothing to press.</p>
     <div class="toolbar">
-      <button class="btn small" id="refreshBtn2">🔄 Refresh results</button>
-      <button class="btn small secondary" id="pasteBtn">📋 Paste results JSON</button>
       <select id="matchFilter" style="background:var(--card2); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-weight:700">
         <option value="played">Played</option>
         <option value="upcoming">Upcoming</option>
@@ -280,7 +277,6 @@
     <p class="lead">The real tournament group standings, computed live from the results.
     Top two in each group advance to the Round of 32, joined by the <b>eight best third-placed</b> teams.</p>
     <div class="toolbar">
-      <button class="btn small" id="refreshBtn3">🔄 Refresh results</button>
       <span class="muted" id="lastUpdated3"></span>
     </div>
     <div class="gt-legend"><span class="q-auto">▌</span> Top two — through &nbsp; <span class="q-third">▌</span> Third — hoping &nbsp; <span style="color:var(--ink-dim)">▌</span> Bottom — sofa</div>
@@ -349,16 +345,16 @@
       <div class="rule-card">
         <h3>📡 How scores update</h3>
         <ul>
-          <li>The leaderboard refreshes itself automatically — on every visit and every 10 minutes while the page is open.</li>
-          <li>Results come from the free openfootball dataset; new scores appear shortly after the dataset is updated (usually within hours of full time).</li>
-          <li>Impatient? Hit <b>Refresh results</b>. If the dataset lags, use <b>Paste results JSON</b> on the Matches tab.</li>
+          <li>While a match is being played the page refreshes itself about every 20 seconds, so the leaderboard tracks goals close to live.</li>
+          <li>Between matches it idles, then picks straight back up at the next kick-off — completely hands-off.</li>
+          <li>Nothing to press: just open the page and the latest scores load themselves.</li>
         </ul>
       </div>
     </div>
   </section>
 
   <div class="footer">
-    Pools based on outright winner odds (BetMGM via Yahoo Sports, June 2026) · Results: openfootball/worldcup.json (public domain)<br>
+    Pools based on outright winner odds (BetMGM via Yahoo Sports, June 2026) · Results: football-data.org (auto-updated)<br>
     Made with ❤️ for the family · FIFA World Cup 2026 · 11 June – 19 July 2026
   </div>
 </div>
@@ -398,24 +394,13 @@
     <button class="btn small secondary" data-close="importModal">Close</button>
   </div>
 </div>
-<div class="modal-bg" id="pasteModal">
-  <div class="modal">
-    <h3>📋 Paste results JSON</h3>
-    <p class="muted">Paste the full <code>worldcup.json</code> contents (openfootball format), e.g. downloaded from
-    <code>raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json</code> — or ask Claude to fetch today's scores in this format.</p>
-    <textarea id="pasteText" placeholder='{"name":"World Cup 2026","matches":[...]}'></textarea>
-    <button class="btn small" id="doPasteBtn">Load results</button>
-    <button class="btn small secondary" data-close="pasteModal">Close</button>
-  </div>
-</div>
-
 <canvas id="confetti"></canvas>
 <div class="toast" id="toast"></div>
 
 <script>
 'use strict';
 /* ===================== DATA ===================== */
-const DATA_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+const DATA_URL = './results.json';
 const KICKOFF = new Date('2026-06-11T19:00:00Z'); // Mexico v South Africa, Estadio Azteca
 const FINAL_DATE = new Date('2026-07-19T23:59:00Z');
 
@@ -673,20 +658,16 @@ function computeScores(){
 
 /* ===================== FETCH RESULTS ===================== */
 async function refreshResults(silent){
-  const btns = [$('refreshBtn1'), $('refreshBtn2'), $('refreshBtn3')];
-  btns.forEach(b => { b.disabled = true; b.textContent = '⏳ Fetching…'; });
   try{
     const res = await fetch(DATA_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (!data.matches || !data.matches.length) throw new Error('no matches in feed');
+    if (!data.matches) throw new Error('no matches in feed');
     state.matches = data; state.fetchedAt = Date.now(); save();
     renderAll();
     if (!silent) toast('✅ Results updated — ' + parseMatches(data).filter(m=>m.played).length + ' matches played');
   } catch(err){
-    if (!silent) toast('⚠️ Couldn’t fetch results (' + err.message + '). Try Paste results JSON.');
-  } finally {
-    btns.forEach(b => { b.disabled = false; b.textContent = '🔄 Refresh results'; });
+    if (!silent) toast('⚠️ Couldn’t fetch results (' + err.message + ')');
   }
 }
 
@@ -1068,16 +1049,6 @@ async function doImport(){
     refreshResults(true);
   } catch(e){ toast('⚠️ That doesn’t look like a valid draw code'); }
 }
-function doPaste(){
-  try{
-    const data = JSON.parse($('pasteText').value.trim());
-    if (!data.matches || !data.matches.length) throw new Error('no matches');
-    state.matches = data; state.fetchedAt = Date.now(); save();
-    closeModal('pasteModal'); renderAll();
-    toast('✅ Results loaded — ' + parseMatches(data).filter(m=>m.played).length + ' matches played');
-  } catch(e){ toast('⚠️ Invalid JSON — paste the full worldcup.json contents'); }
-}
-
 /* ===================== WIRE-UP ===================== */
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
@@ -1111,11 +1082,6 @@ $('copyExportBtn').addEventListener('click', () => {
   navigator.clipboard.writeText($('exportText').value).then(() => toast('📋 Copied!'));
 });
 $('doImportBtn').addEventListener('click', doImport);
-$('pasteBtn').addEventListener('click', () => openModal('pasteModal'));
-$('doPasteBtn').addEventListener('click', doPaste);
-$('refreshBtn1').addEventListener('click', () => refreshResults(false));
-$('refreshBtn2').addEventListener('click', () => refreshResults(false));
-$('refreshBtn3').addEventListener('click', () => refreshResults(false));
 $('matchFilter').addEventListener('change', renderMatches);
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
 document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
@@ -1141,17 +1107,25 @@ async function loadPublishedDraw(silent){
 
 renderAll();
 setInterval(renderKickoff, 30000);
-// live updates: refresh on load if stale, then every 10 minutes while the page is open,
-// and whenever the tab comes back into focus
-const STALE_MS = 10*60*1000;
+// Live updates. results.json carries a `live` flag (true while any match is in
+// play), so we poll fast during games and idle between them. The leaderboard and
+// tables recompute on every refresh via renderAll(), so they track the live score.
+const LIVE_MS = 20*1000, IDLE_MS = 5*60*1000;
+const isLive = () => !!(state.matches && state.matches.live);
+let pollTimer = null;
+function scheduleNextPoll(){
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(runPoll, isLive() ? LIVE_MS : IDLE_MS);
+}
+async function runPoll(){
+  await loadPublishedDraw(true);
+  await refreshResults(true);
+  scheduleNextPoll();
+}
 loadPublishedDraw(true);
-if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
-setInterval(() => { loadPublishedDraw(true); refreshResults(true); }, STALE_MS);
+refreshResults(true).then(scheduleNextPoll);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden){
-    loadPublishedDraw(true);
-    if (!state.fetchedAt || Date.now() - state.fetchedAt > STALE_MS) refreshResults(true);
-  }
+  if (!document.hidden) runPoll();   // refresh immediately and re-arm the timer
 });
 </script>
 </body>

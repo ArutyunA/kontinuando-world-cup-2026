@@ -1,0 +1,39 @@
+name: Live Score Updates
+
+# A single run stays alive and polls football-data.org from the inside
+# (see .github/scripts/update-loop.js): fast while a match is live, backing
+# off otherwise, committing results.json only when scores change.
+#
+# The cron entry is a *restarter*, not the poller: it keeps a replacement run
+# queued so coverage is seamless across each match day. `concurrency` ensures
+# only one loop ever runs at a time, with at most one waiting to take over.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # restart cadence (GitHub cron is best-effort)
+  workflow_dispatch:
+
+concurrency:
+  group: live-scores
+  cancel-in-progress: false   # queue the newcomer; never kill the running loop
+
+jobs:
+  live-scores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350       # hard ceiling; the script exits at ~330 min
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # full history so rebase-before-push is clean
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run live score loop
+        env:
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+          GIT_BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/update-loop.js
