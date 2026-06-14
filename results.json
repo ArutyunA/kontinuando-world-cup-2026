@@ -35,13 +35,7 @@
       "round": "Group B",
       "date": "2026-06-12",
       "time": "19:00",
-      "group": "Group B",
-      "score": {
-        "ft": [
-          1,
-          1
-        ]
-      }
+      "group": "Group B"
     },
     {
       "team1": "USA",
@@ -123,7 +117,7 @@
       "live": true,
       "score": {
         "ft": [
-          3,
+          4,
           1
         ]
       }
