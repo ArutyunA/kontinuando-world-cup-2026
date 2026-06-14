@@ -35,13 +35,7 @@
       "round": "Group B",
       "date": "2026-06-12",
       "time": "19:00",
-      "group": "Group B",
-      "score": {
-        "ft": [
-          1,
-          1
-        ]
-      }
+      "group": "Group B"
     },
     {
       "team1": "USA",
@@ -336,7 +330,7 @@
     },
     {
       "team1": "Ecuador",
-      "team2": "Curaçao",
+      "team2": "Cura��ao",
       "round": "Group E",
       "date": "2026-06-21",
       "time": "00:00",
