@@ -148,7 +148,13 @@
       "date": "2026-06-14",
       "time": "23:00",
       "group": "Group E",
-      "live": true
+      "live": true,
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Sweden",
