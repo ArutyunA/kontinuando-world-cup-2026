@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -147,7 +147,8 @@
       "round": "Group E",
       "date": "2026-06-14",
       "time": "23:00",
-      "group": "Group E"
+      "group": "Group E",
+      "live": true
     },
     {
       "team1": "Sweden",
