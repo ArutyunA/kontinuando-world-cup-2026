@@ -217,7 +217,13 @@
       "round": "Group G",
       "date": "2026-06-16",
       "time": "01:00",
-      "group": "Group G"
+      "group": "Group G",
+      "score": {
+        "ft": [
+          2,
+          2
+        ]
+      }
     },
     {
       "team1": "France",
