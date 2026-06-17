@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -301,7 +301,14 @@
       "round": "Group L",
       "date": "2026-06-17",
       "time": "20:00",
-      "group": "Group L"
+      "group": "Group L",
+      "live": true,
+      "score": {
+        "ft": [
+          2,
+          2
+        ]
+      }
     },
     {
       "team1": "Ghana",
