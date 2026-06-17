@@ -273,7 +273,13 @@
       "round": "Group J",
       "date": "2026-06-17",
       "time": "04:00",
-      "group": "Group J"
+      "group": "Group J",
+      "score": {
+        "ft": [
+          3,
+          1
+        ]
+      }
     },
     {
       "team1": "Portugal",
