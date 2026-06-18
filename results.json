@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -371,7 +371,14 @@
       "round": "Group B",
       "date": "2026-06-18",
       "time": "22:00",
-      "group": "Group B"
+      "group": "Group B",
+      "live": true,
+      "score": {
+        "ft": [
+          3,
+          0
+        ]
+      }
     },
     {
       "team1": "Mexico",
