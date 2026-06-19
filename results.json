@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -399,7 +399,14 @@
       "round": "Group D",
       "date": "2026-06-19",
       "time": "19:00",
-      "group": "Group D"
+      "group": "Group D",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Scotland",
