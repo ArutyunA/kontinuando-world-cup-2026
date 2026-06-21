@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -539,7 +539,14 @@
       "round": "Group H",
       "date": "2026-06-21",
       "time": "22:00",
-      "group": "Group H"
+      "group": "Group H",
+      "live": true,
+      "score": {
+        "ft": [
+          2,
+          1
+        ]
+      }
     },
     {
       "team1": "New Zealand",
