@@ -497,7 +497,13 @@
       "round": "Group F",
       "date": "2026-06-21",
       "time": "04:00",
-      "group": "Group F"
+      "group": "Group F",
+      "score": {
+        "ft": [
+          0,
+          4
+        ]
+      }
     },
     {
       "team1": "Spain",
