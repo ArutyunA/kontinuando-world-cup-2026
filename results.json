@@ -553,7 +553,13 @@
       "round": "Group G",
       "date": "2026-06-22",
       "time": "01:00",
-      "group": "Group G"
+      "group": "Group G",
+      "score": {
+        "ft": [
+          1,
+          3
+        ]
+      }
     },
     {
       "team1": "Argentina",
