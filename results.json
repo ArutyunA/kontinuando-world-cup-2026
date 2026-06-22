@@ -1,5 +1,5 @@
 {
-  "live": true,
+  "live": false,
   "matches": [
     {
       "team1": "Mexico",
@@ -553,14 +553,7 @@
       "round": "Group G",
       "date": "2026-06-22",
       "time": "01:00",
-      "group": "Group G",
-      "live": true,
-      "score": {
-        "ft": [
-          1,
-          0
-        ]
-      }
+      "group": "Group G"
     },
     {
       "team1": "Argentina",
