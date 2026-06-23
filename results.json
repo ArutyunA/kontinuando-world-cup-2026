@@ -651,7 +651,13 @@
       "round": "Group L",
       "date": "2026-06-23",
       "time": "23:00",
-      "group": "Group L"
+      "group": "Group L",
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Colombia",
