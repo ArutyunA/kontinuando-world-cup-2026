@@ -35,7 +35,13 @@
       "round": "Group B",
       "date": "2026-06-12",
       "time": "19:00",
-      "group": "Group B"
+      "group": "Group B",
+      "score": {
+        "ft": [
+          1,
+          1
+        ]
+      }
     },
     {
       "team1": "USA",
@@ -844,7 +850,7 @@
       "time": "17:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Germany",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-29",
@@ -872,7 +878,7 @@
       "time": "21:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Mexico",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-01",
@@ -893,7 +899,7 @@
       "time": "20:00"
     },
     {
-      "team1": "TBD",
+      "team1": "USA",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-02",
