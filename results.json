@@ -1,5 +1,5 @@
 {
-  "live": true,
+  "live": false,
   "matches": [
     {
       "team1": "Mexico",
@@ -610,7 +610,6 @@
       "date": "2026-06-23",
       "time": "03:00",
       "group": "Group J",
-      "live": true,
       "score": {
         "ft": [
           1,
@@ -857,7 +856,7 @@
       "time": "17:00"
     },
     {
-      "team1": "Germany",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-29",
@@ -885,7 +884,7 @@
       "time": "21:00"
     },
     {
-      "team1": "Mexico",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-01",
@@ -906,7 +905,7 @@
       "time": "20:00"
     },
     {
-      "team1": "USA",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-02",
