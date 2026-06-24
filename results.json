@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -35,13 +35,7 @@
       "round": "Group B",
       "date": "2026-06-12",
       "time": "19:00",
-      "group": "Group B",
-      "score": {
-        "ft": [
-          1,
-          1
-        ]
-      }
+      "group": "Group B"
     },
     {
       "team1": "USA",
@@ -707,7 +701,14 @@
       "round": "Group C",
       "date": "2026-06-24",
       "time": "22:00",
-      "group": "Group C"
+      "group": "Group C",
+      "live": true,
+      "score": {
+        "ft": [
+          2,
+          2
+        ]
+      }
     },
     {
       "team1": "Scotland",
@@ -715,7 +716,14 @@
       "round": "Group C",
       "date": "2026-06-24",
       "time": "22:00",
-      "group": "Group C"
+      "group": "Group C",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          2
+        ]
+      }
     },
     {
       "team1": "Czech Republic",
