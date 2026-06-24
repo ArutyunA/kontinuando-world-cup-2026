@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -679,7 +679,14 @@
       "round": "Group B",
       "date": "2026-06-24",
       "time": "19:00",
-      "group": "Group B"
+      "group": "Group B",
+      "live": true,
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Bosnia & Herzegovina",
@@ -687,7 +694,14 @@
       "round": "Group B",
       "date": "2026-06-24",
       "time": "19:00",
-      "group": "Group B"
+      "group": "Group B",
+      "live": true,
+      "score": {
+        "ft": [
+          2,
+          1
+        ]
+      }
     },
     {
       "team1": "Morocco",
