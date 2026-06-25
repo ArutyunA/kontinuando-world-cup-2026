@@ -763,13 +763,7 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E",
-      "score": {
-        "ft": [
-          2,
-          1
-        ]
-      }
+      "group": "Group E"
     },
     {
       "team1": "Curaçao",
@@ -777,13 +771,7 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E",
-      "score": {
-        "ft": [
-          0,
-          2
-        ]
-      }
+      "group": "Group E"
     },
     {
       "team1": "Tunisia",
