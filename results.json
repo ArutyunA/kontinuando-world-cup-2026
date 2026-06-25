@@ -735,7 +735,13 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A"
+      "group": "Group A",
+      "score": {
+        "ft": [
+          0,
+          3
+        ]
+      }
     },
     {
       "team1": "South Africa",
@@ -743,7 +749,13 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A"
+      "group": "Group A",
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Ecuador",
