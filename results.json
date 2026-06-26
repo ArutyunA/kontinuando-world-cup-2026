@@ -735,13 +735,7 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A",
-      "score": {
-        "ft": [
-          0,
-          3
-        ]
-      }
+      "group": "Group A"
     },
     {
       "team1": "South Africa",
@@ -749,13 +743,7 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A",
-      "score": {
-        "ft": [
-          1,
-          0
-        ]
-      }
+      "group": "Group A"
     },
     {
       "team1": "Ecuador",
@@ -763,13 +751,7 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E",
-      "score": {
-        "ft": [
-          2,
-          1
-        ]
-      }
+      "group": "Group E"
     },
     {
       "team1": "Curaçao",
@@ -777,13 +759,7 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E",
-      "score": {
-        "ft": [
-          0,
-          2
-        ]
-      }
+      "group": "Group E"
     },
     {
       "team1": "Tunisia",
@@ -791,13 +767,7 @@
       "round": "Group F",
       "date": "2026-06-25",
       "time": "23:00",
-      "group": "Group F",
-      "score": {
-        "ft": [
-          1,
-          3
-        ]
-      }
+      "group": "Group F"
     },
     {
       "team1": "Japan",
@@ -805,13 +775,7 @@
       "round": "Group F",
       "date": "2026-06-25",
       "time": "23:00",
-      "group": "Group F",
-      "score": {
-        "ft": [
-          1,
-          1
-        ]
-      }
+      "group": "Group F"
     },
     {
       "team1": "Turkey",
@@ -938,15 +902,15 @@
       "group": "Group J"
     },
     {
-      "team1": "South Africa",
-      "team2": "Canada",
+      "team1": "TBD",
+      "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-28",
       "time": "19:00"
     },
     {
-      "team1": "Brazil",
-      "team2": "Japan",
+      "team1": "TBD",
+      "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-29",
       "time": "17:00"
@@ -959,8 +923,8 @@
       "time": "20:30"
     },
     {
-      "team1": "Netherlands",
-      "team2": "Morocco",
+      "team1": "TBD",
+      "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-30",
       "time": "01:00"
@@ -1002,7 +966,7 @@
     },
     {
       "team1": "USA",
-      "team2": "Bosnia & Herzegovina",
+      "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-02",
       "time": "00:00"
@@ -1022,14 +986,14 @@
       "time": "23:00"
     },
     {
-      "team1": "Switzerland",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-03",
       "time": "03:00"
     },
     {
-      "team1": "Australia",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-03",
