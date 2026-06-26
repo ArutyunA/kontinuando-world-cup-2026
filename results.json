@@ -735,7 +735,13 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A"
+      "group": "Group A",
+      "score": {
+        "ft": [
+          0,
+          3
+        ]
+      }
     },
     {
       "team1": "South Africa",
@@ -743,7 +749,13 @@
       "round": "Group A",
       "date": "2026-06-25",
       "time": "01:00",
-      "group": "Group A"
+      "group": "Group A",
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Ecuador",
@@ -751,7 +763,13 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E"
+      "group": "Group E",
+      "score": {
+        "ft": [
+          2,
+          1
+        ]
+      }
     },
     {
       "team1": "Curaçao",
@@ -759,7 +777,13 @@
       "round": "Group E",
       "date": "2026-06-25",
       "time": "20:00",
-      "group": "Group E"
+      "group": "Group E",
+      "score": {
+        "ft": [
+          0,
+          2
+        ]
+      }
     },
     {
       "team1": "Tunisia",
@@ -767,7 +791,13 @@
       "round": "Group F",
       "date": "2026-06-25",
       "time": "23:00",
-      "group": "Group F"
+      "group": "Group F",
+      "score": {
+        "ft": [
+          1,
+          3
+        ]
+      }
     },
     {
       "team1": "Japan",
@@ -775,7 +805,13 @@
       "round": "Group F",
       "date": "2026-06-25",
       "time": "23:00",
-      "group": "Group F"
+      "group": "Group F",
+      "score": {
+        "ft": [
+          1,
+          1
+        ]
+      }
     },
     {
       "team1": "Turkey",
