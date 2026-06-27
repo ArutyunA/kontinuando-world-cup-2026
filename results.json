@@ -875,7 +875,13 @@
       "round": "Group H",
       "date": "2026-06-27",
       "time": "00:00",
-      "group": "Group H"
+      "group": "Group H",
+      "score": {
+        "ft": [
+          0,
+          1
+        ]
+      }
     },
     {
       "team1": "Cape Verde",
@@ -883,7 +889,13 @@
       "round": "Group H",
       "date": "2026-06-27",
       "time": "00:00",
-      "group": "Group H"
+      "group": "Group H",
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "New Zealand",
@@ -950,29 +962,29 @@
       "group": "Group J"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "South Africa",
+      "team2": "Canada",
       "round": "Round of 32",
       "date": "2026-06-28",
       "time": "19:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Brazil",
+      "team2": "Japan",
       "round": "Round of 32",
       "date": "2026-06-29",
       "time": "17:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Germany",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-29",
       "time": "20:30"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Netherlands",
+      "team2": "Morocco",
       "round": "Round of 32",
       "date": "2026-06-30",
       "time": "01:00"
@@ -992,7 +1004,7 @@
       "time": "21:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Mexico",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-01",
@@ -1013,8 +1025,8 @@
       "time": "20:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "USA",
+      "team2": "Bosnia & Herzegovina",
       "round": "Round of 32",
       "date": "2026-07-02",
       "time": "00:00"
@@ -1034,21 +1046,21 @@
       "time": "23:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Switzerland",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-03",
       "time": "03:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Australia",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-03",
       "time": "18:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Argentina",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-07-03",
