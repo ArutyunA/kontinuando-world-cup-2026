@@ -959,7 +959,13 @@
       "round": "Group K",
       "date": "2026-06-27",
       "time": "23:30",
-      "group": "Group K"
+      "group": "Group K",
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "DR Congo",
@@ -967,7 +973,13 @@
       "round": "Group K",
       "date": "2026-06-27",
       "time": "23:30",
-      "group": "Group K"
+      "group": "Group K",
+      "score": {
+        "ft": [
+          1,
+          1
+        ]
+      }
     },
     {
       "team1": "Jordan",
