@@ -847,7 +847,13 @@
       "round": "Group I",
       "date": "2026-06-26",
       "time": "19:00",
-      "group": "Group I"
+      "group": "Group I",
+      "score": {
+        "ft": [
+          1,
+          4
+        ]
+      }
     },
     {
       "team1": "Senegal",
@@ -855,7 +861,13 @@
       "round": "Group I",
       "date": "2026-06-26",
       "time": "19:00",
-      "group": "Group I"
+      "group": "Group I",
+      "score": {
+        "ft": [
+          5,
+          0
+        ]
+      }
     },
     {
       "team1": "Uruguay",
