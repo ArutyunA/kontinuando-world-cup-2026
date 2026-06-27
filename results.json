@@ -903,7 +903,13 @@
       "round": "Group G",
       "date": "2026-06-27",
       "time": "03:00",
-      "group": "Group G"
+      "group": "Group G",
+      "score": {
+        "ft": [
+          1,
+          5
+        ]
+      }
     },
     {
       "team1": "Egypt",
@@ -911,7 +917,13 @@
       "round": "Group G",
       "date": "2026-06-27",
       "time": "03:00",
-      "group": "Group G"
+      "group": "Group G",
+      "score": {
+        "ft": [
+          1,
+          1
+        ]
+      }
     },
     {
       "team1": "Panama",
