@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -931,7 +931,14 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L"
+      "group": "Group L",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Croatia",
@@ -939,7 +946,13 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L"
+      "group": "Group L",
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Colombia",
