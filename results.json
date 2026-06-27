@@ -847,13 +847,7 @@
       "round": "Group I",
       "date": "2026-06-26",
       "time": "19:00",
-      "group": "Group I",
-      "score": {
-        "ft": [
-          1,
-          4
-        ]
-      }
+      "group": "Group I"
     },
     {
       "team1": "Senegal",
@@ -861,13 +855,7 @@
       "round": "Group I",
       "date": "2026-06-26",
       "time": "19:00",
-      "group": "Group I",
-      "score": {
-        "ft": [
-          5,
-          0
-        ]
-      }
+      "group": "Group I"
     },
     {
       "team1": "Uruguay",
@@ -921,7 +909,7 @@
       "score": {
         "ft": [
           1,
-          1
+          2
         ]
       }
     },
@@ -1016,7 +1004,7 @@
       "time": "01:00"
     },
     {
-      "team1": "Ivory Coast",
+      "team1": "TBD",
       "team2": "TBD",
       "round": "Round of 32",
       "date": "2026-06-30",
