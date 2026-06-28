@@ -931,7 +931,13 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L"
+      "group": "Group L",
+      "score": {
+        "ft": [
+          0,
+          2
+        ]
+      }
     },
     {
       "team1": "Croatia",
@@ -939,7 +945,13 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L"
+      "group": "Group L",
+      "score": {
+        "ft": [
+          2,
+          1
+        ]
+      }
     },
     {
       "team1": "Colombia",
