@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -931,13 +931,7 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L",
-      "score": {
-        "ft": [
-          0,
-          2
-        ]
-      }
+      "group": "Group L"
     },
     {
       "team1": "Croatia",
@@ -945,13 +939,7 @@
       "round": "Group L",
       "date": "2026-06-27",
       "time": "21:00",
-      "group": "Group L",
-      "score": {
-        "ft": [
-          2,
-          1
-        ]
-      }
+      "group": "Group L"
     },
     {
       "team1": "Colombia",
@@ -976,7 +964,7 @@
       "group": "Group K",
       "score": {
         "ft": [
-          1,
+          3,
           1
         ]
       }
@@ -987,7 +975,14 @@
       "round": "Group J",
       "date": "2026-06-28",
       "time": "02:00",
-      "group": "Group J"
+      "group": "Group J",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          1
+        ]
+      }
     },
     {
       "team1": "Algeria",
@@ -995,7 +990,13 @@
       "round": "Group J",
       "date": "2026-06-28",
       "time": "02:00",
-      "group": "Group J"
+      "group": "Group J",
+      "score": {
+        "ft": [
+          0,
+          1
+        ]
+      }
     },
     {
       "team1": "South Africa",
