@@ -1,5 +1,5 @@
 {
-  "live": true,
+  "live": false,
   "matches": [
     {
       "team1": "Mexico",
@@ -1028,7 +1028,6 @@
       "round": "Round of 32",
       "date": "2026-06-29",
       "time": "17:00",
-      "live": true,
       "score": {
         "ft": [
           0,
