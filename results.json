@@ -1051,7 +1051,7 @@
           5
         ],
         "p": [
-          4,
+          3,
           4
         ]
       }
@@ -1066,6 +1066,14 @@
         "ft": [
           1,
           1
+        ],
+        "et": [
+          3,
+          4
+        ],
+        "p": [
+          2,
+          3
         ]
       }
     },
@@ -1155,20 +1163,20 @@
     },
     {
       "team1": "Canada",
-      "team2": "TBD",
+      "team2": "Morocco",
       "round": "Round of 16",
       "date": "2026-07-04",
       "time": "17:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Paraguay",
       "team2": "TBD",
       "round": "Round of 16",
       "date": "2026-07-04",
       "time": "21:00"
     },
     {
-      "team1": "TBD",
+      "team1": "Brazil",
       "team2": "TBD",
       "round": "Round of 16",
       "date": "2026-07-05",
