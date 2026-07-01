@@ -1082,7 +1082,13 @@
       "team2": "Norway",
       "round": "Round of 32",
       "date": "2026-06-30",
-      "time": "17:00"
+      "time": "17:00",
+      "score": {
+        "ft": [
+          1,
+          2
+        ]
+      }
     },
     {
       "team1": "France",
