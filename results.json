@@ -1121,7 +1121,13 @@
       "team2": "DR Congo",
       "round": "Round of 32",
       "date": "2026-07-01",
-      "time": "16:00"
+      "time": "16:00",
+      "score": {
+        "ft": [
+          0,
+          1
+        ]
+      }
     },
     {
       "team1": "Belgium",
