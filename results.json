@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1177,7 +1177,14 @@
       "team2": "Croatia",
       "round": "Round of 32",
       "date": "2026-07-02",
-      "time": "23:00"
+      "time": "23:00",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Switzerland",
