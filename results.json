@@ -1108,7 +1108,7 @@
       "team2": "Ecuador",
       "round": "Round of 32",
       "date": "2026-07-01",
-      "time": "01:00",
+      "time": "02:00",
       "score": {
         "ft": [
           2,
@@ -1137,6 +1137,10 @@
       "time": "20:00",
       "score": {
         "ft": [
+          2,
+          2
+        ],
+        "et": [
           3,
           2
         ]
@@ -1219,8 +1223,8 @@
       "time": "20:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Mexico",
+      "team2": "England",
       "round": "Round of 16",
       "date": "2026-07-06",
       "time": "00:00"
@@ -1233,8 +1237,8 @@
       "time": "19:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "USA",
+      "team2": "Belgium",
       "round": "Round of 16",
       "date": "2026-07-07",
       "time": "00:00"
