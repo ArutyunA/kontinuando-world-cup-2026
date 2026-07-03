@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1224,7 +1224,14 @@
       "team2": "Cape Verde",
       "round": "Round of 32",
       "date": "2026-07-03",
-      "time": "22:00"
+      "time": "22:00",
+      "live": true,
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Colombia",
