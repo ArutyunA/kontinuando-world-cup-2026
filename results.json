@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1254,7 +1254,14 @@
       "team2": "Morocco",
       "round": "Round of 16",
       "date": "2026-07-04",
-      "time": "17:00"
+      "time": "17:00",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Paraguay",
