@@ -1214,7 +1214,7 @@
           5
         ],
         "p": [
-          4,
+          2,
           4
         ]
       }
@@ -1227,6 +1227,10 @@
       "time": "22:00",
       "score": {
         "ft": [
+          1,
+          1
+        ],
+        "et": [
           3,
           2
         ]
@@ -1274,8 +1278,8 @@
       "time": "00:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Portugal",
+      "team2": "Spain",
       "round": "Round of 16",
       "date": "2026-07-06",
       "time": "19:00"
@@ -1288,15 +1292,15 @@
       "time": "00:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Argentina",
+      "team2": "Egypt",
       "round": "Round of 16",
       "date": "2026-07-07",
       "time": "16:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "Switzerland",
+      "team2": "Colombia",
       "round": "Round of 16",
       "date": "2026-07-07",
       "time": "20:00"
