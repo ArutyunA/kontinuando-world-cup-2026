@@ -1237,7 +1237,13 @@
       "team2": "Ghana",
       "round": "Round of 32",
       "date": "2026-07-04",
-      "time": "01:30"
+      "time": "01:30",
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "Canada",
