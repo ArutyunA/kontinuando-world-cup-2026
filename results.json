@@ -1267,7 +1267,13 @@
       "team2": "France",
       "round": "Round of 16",
       "date": "2026-07-04",
-      "time": "21:00"
+      "time": "21:00",
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "Brazil",
