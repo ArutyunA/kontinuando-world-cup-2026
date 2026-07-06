@@ -1306,7 +1306,13 @@
       "team2": "Spain",
       "round": "Round of 16",
       "date": "2026-07-06",
-      "time": "19:00"
+      "time": "19:00",
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     },
     {
       "team1": "USA",
