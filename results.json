@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1332,7 +1332,14 @@
       "team2": "Egypt",
       "round": "Round of 16",
       "date": "2026-07-07",
-      "time": "16:00"
+      "time": "16:00",
+      "live": true,
+      "score": {
+        "ft": [
+          1,
+          2
+        ]
+      }
     },
     {
       "team1": "Switzerland",
