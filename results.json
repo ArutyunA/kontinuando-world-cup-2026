@@ -1396,6 +1396,10 @@
       "score": {
         "ft": [
           1,
+          1
+        ],
+        "et": [
+          1,
           2
         ]
       }
@@ -1408,6 +1412,10 @@
       "time": "01:00",
       "score": {
         "ft": [
+          1,
+          1
+        ],
+        "et": [
           3,
           1
         ]
@@ -1421,8 +1429,8 @@
       "time": "19:00"
     },
     {
-      "team1": "TBD",
-      "team2": "TBD",
+      "team1": "England",
+      "team2": "Argentina",
       "round": "Semi-final",
       "date": "2026-07-15",
       "time": "19:00"
