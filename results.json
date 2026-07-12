@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1405,7 +1405,14 @@
       "team2": "Switzerland",
       "round": "Quarter-final",
       "date": "2026-07-12",
-      "time": "01:00"
+      "time": "01:00",
+      "live": true,
+      "score": {
+        "ft": [
+          1,
+          0
+        ]
+      }
     },
     {
       "team1": "France",
