@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1426,7 +1426,14 @@
       "team2": "Spain",
       "round": "Semi-final",
       "date": "2026-07-14",
-      "time": "19:00"
+      "time": "19:00",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          1
+        ]
+      }
     },
     {
       "team1": "England",
