@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1452,7 +1452,14 @@
       "team2": "England",
       "round": "Match for third place",
       "date": "2026-07-18",
-      "time": "21:00"
+      "time": "21:00",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          2
+        ]
+      }
     },
     {
       "team1": "Spain",
