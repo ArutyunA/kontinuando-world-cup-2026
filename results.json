@@ -1,5 +1,5 @@
 {
-  "live": true,
+  "live": false,
   "matches": [
     {
       "team1": "Mexico",
@@ -1453,7 +1453,6 @@
       "round": "Match for third place",
       "date": "2026-07-18",
       "time": "21:00",
-      "live": true,
       "score": {
         "ft": [
           4,
