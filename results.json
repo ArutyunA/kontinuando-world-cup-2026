@@ -1,5 +1,5 @@
 {
-  "live": false,
+  "live": true,
   "matches": [
     {
       "team1": "Mexico",
@@ -1465,7 +1465,14 @@
       "team2": "Argentina",
       "round": "Final",
       "date": "2026-07-19",
-      "time": "19:00"
+      "time": "19:00",
+      "live": true,
+      "score": {
+        "ft": [
+          0,
+          0
+        ]
+      }
     }
   ]
 }
